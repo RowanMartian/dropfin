@@ -1,0 +1,1611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="dropfin-token" content="__DROPFIN_TOKEN__">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#232325" media="(prefers-color-scheme: dark)">
+<title>Dropfin</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<style>
+:root{
+  --bg:#ffffff; --sidebar:#f5f5f7; --panel:#ffffff; --hover:rgba(0,0,0,.045); --sb-active:rgba(0,0,0,.075);
+  --border:#e5e5ea; --border-strong:#d2d2d7; --text:#1d1d1f; --text2:#6e6e73; --text3:#a1a1a6;
+  --accent:#0a7aff; --accent-soft:rgba(10,122,255,.10); --sel:#0a7aff; --sel-inactive:#e3e3e8;
+  --danger:#e5372b; --ok:#1f9d48; --input:#ededf0; --input-hover:#e2e2e6; --track:#e5e5ea;
+  --folder:#58b0f7; --folder-back:#3a96e6; --doc:#ffffff; --doc-stroke:#c9c9ce; --scrim:rgba(0,0,0,.2); --ql:#f5f5f7;
+  --cols:minmax(240px,1fr) 190px 96px 160px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1c1c1e; --sidebar:#232325; --panel:#232325; --hover:rgba(255,255,255,.055); --sb-active:rgba(255,255,255,.09);
+    --border:#333336; --border-strong:#48484b; --text:#f5f5f7; --text2:#a1a1a6; --text3:#6e6e73;
+    --accent:#0a84ff; --accent-soft:rgba(10,132,255,.16); --sel:#0a62d0; --sel-inactive:#3a3a3d;
+    --danger:#ff453a; --ok:#32d74b; --input:#2f2f32; --input-hover:#3a3a3d; --track:#3a3a3d;
+    --folder:#4aa3ee; --folder-back:#2c7fcf; --doc:#2c2c2e; --doc-stroke:#5a5a5e; --scrim:rgba(0,0,0,.45); --ql:#161618;
+  }
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:13px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue","Segoe UI",system-ui,sans-serif;color:var(--text);background:var(--bg);
+  -webkit-font-smoothing:antialiased;overflow:hidden;-webkit-user-select:none;user-select:none;cursor:default}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:default}
+input,select{font:inherit;color:inherit}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+svg{flex:none;display:block}
+kbd{font:inherit}
+
+/* ---------- buttons & fields ---------- */
+.btn{height:30px;padding:0 14px;border-radius:8px;background:var(--input);font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover:not(:disabled){background:var(--input-hover)}
+.btn:disabled{opacity:.5}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover:not(:disabled){background:var(--accent);opacity:.9}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.danger:hover:not(:disabled){background:var(--danger);opacity:.9}
+.btn.big{height:40px;font-size:14px;border-radius:10px}
+.field{width:100%;height:34px;border:1px solid var(--border-strong);border-radius:8px;padding:0 11px;background:var(--bg);-webkit-user-select:text;user-select:text}
+.field:focus{border-color:var(--accent);outline:3px solid var(--accent-soft);outline-offset:0}
+.field::placeholder{color:var(--text3)}
+label.lbl{display:block;font-size:12px;font-weight:500;color:var(--text2);margin:0 0 5px}
+.row2{display:grid;grid-template-columns:1fr 84px;gap:10px}
+.check{display:flex;gap:8px;align-items:center;color:var(--text2);font-size:12.5px}
+.check input{accent-color:var(--accent);margin:0}
+.link{color:var(--accent);cursor:pointer;font-size:12.5px}
+.link:hover{text-decoration:underline}
+.hint{font-size:12px;color:var(--text2);line-height:1.45}
+.err{color:var(--danger);font-size:12.5px;line-height:1.4}
+
+/* ---------- connect ---------- */
+.connect{height:100%;overflow:auto;display:grid;place-items:center;padding:24px 16px;background:var(--sidebar)}
+.cc{width:min(400px,100%);background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:30px 28px 24px}
+.cc-head{text-align:center;margin-bottom:22px}
+.cc-head img{width:64px;height:64px;margin:0 auto 12px;display:block}
+.cc-head h1{font-size:20px;margin:0 0 4px;font-weight:650;letter-spacing:-.01em}
+.cc-head p{margin:0;color:var(--text2)}
+.srv{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:14px;padding:14px}
+.srv + .srv{margin-top:10px}
+.srv-ic{width:40px;height:40px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.srv-txt{flex:1;min-width:0}
+.srv-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srv-sub{color:var(--text2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srv-edit{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--text2)}
+.srv-edit:hover{background:var(--hover);color:var(--text)}
+.cc-main-btn{width:100%;margin-top:16px}
+.cc-foot{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.cc form{display:grid;gap:14px}
+.found{display:flex;flex-wrap:wrap;gap:6px;margin-top:-4px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:500;font-size:12px;cursor:pointer}
+.chip:hover{background:var(--accent);color:#fff}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- app shell ---------- */
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);height:100%}
+.sidebar{background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;padding:14px 10px 10px}
+.sb-head{display:flex;align-items:center;gap:10px;padding:2px 8px 10px}
+.sb-head img{width:24px;height:24px}
+.sb-title{font-weight:650;font-size:13px}
+#sb-nav{flex:1;overflow:auto;padding-bottom:8px}
+.sb-section{font-size:11px;font-weight:600;color:var(--text3);padding:14px 10px 4px}
+.sb-item{display:flex;align-items:center;gap:9px;width:100%;height:30px;padding:0 10px;border-radius:8px;text-align:left}
+.sb-item svg{color:var(--accent)}
+.sb-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-item:hover{background:var(--hover)}
+.sb-item.active{background:var(--sb-active)}
+.sb-item.missing{color:var(--text3)}
+.sb-item.missing svg{color:var(--text3)}
+.sb-note{font-size:11.5px;color:var(--text3);padding:4px 10px;line-height:1.4}
+.sb-foot{border-top:1px solid var(--border);padding:12px 6px 0;display:grid;gap:12px}
+.storage .lbl2{font-size:11px;color:var(--text2);margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+.bar{height:5px;border-radius:3px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--text2);border-radius:3px}
+.sb-conn{display:flex;align-items:center;gap:8px;height:32px;padding:0 8px;border-radius:8px;width:100%;text-align:left}
+.sb-conn:hover{background:var(--hover)}
+.sb-conn .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+.sb-conn .dot.off{background:var(--text3)}
+.sb-conn span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.sb-conn svg{color:var(--text2)}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) 30px;min-width:0;min-height:0}
+.toolbar{display:flex;align-items:center;gap:4px;padding:0 12px;border-bottom:1px solid var(--border);min-width:0}
+.tb{height:30px;min-width:32px;padding:0 7px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:6px;color:var(--text2);flex:none}
+.tb:hover:not(:disabled){background:var(--hover);color:var(--text)}
+.tb:disabled{opacity:.35}
+.tb.on{background:var(--sb-active);color:var(--text)}
+.tb-title{font-size:14px;font-weight:650;margin:0 0 0 6px;padding:4px 8px;border-radius:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:40%}
+.tb-title:hover{background:var(--hover)}
+.tb-spacer{flex:1;min-width:8px}
+.tb-sep{width:1px;height:18px;background:var(--border);margin:0 5px;flex:none}
+.seg{display:flex;background:var(--input);border-radius:8px;padding:2px;gap:2px;flex:none;margin-right:4px}
+.seg button{height:26px;width:32px;border-radius:6px;display:grid;place-items:center;color:var(--text2)}
+.seg button.on{background:var(--panel);color:var(--text);outline:1px solid var(--border-strong);outline-offset:-1px}
+.search{display:flex;align-items:center;gap:6px;height:30px;background:var(--input);border-radius:8px;padding:0 9px;color:var(--text2);width:190px;margin-left:6px;flex:none}
+.search input{border:0;background:none;flex:1;min-width:0;outline:none;-webkit-user-select:text;user-select:text}
+.search input::placeholder{color:var(--text3)}
+
+.files-wrap{position:relative;min-height:0;display:flex;flex-direction:column}
+.files{flex:1;overflow:auto;padding:0 8px 16px;scroll-padding-top:34px}
+.files:focus,.files:focus-visible{outline:none}
+.list-head{position:sticky;top:0;z-index:2;background:var(--bg);display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--border);margin:0 -8px 4px;padding:0 8px}
+.list-head button{text-align:left;height:28px;padding:0 10px;font-size:11.5px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:4px;border-left:1px solid var(--border);margin:5px 0;height:18px;white-space:nowrap;overflow:hidden}
+.list-head button:first-child{border-left:0}
+.list-head button.r{justify-content:flex-end}
+.list-head button.sorted{color:var(--text);font-weight:600}
+.list-head button:hover{color:var(--text)}
+.row{display:grid;grid-template-columns:var(--cols);height:28px;align-items:center;border-radius:7px}
+.row>div{padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-name{display:flex;align-items:center;gap:8px}
+.c-name .nm{overflow:hidden;text-overflow:ellipsis}
+.c-date,.c-size,.c-kind{color:var(--text2)}
+.c-size{text-align:right}
+.row.sel{background:var(--sel);color:#fff}
+.row.sel .c-date,.row.sel .c-size,.row.sel .c-kind{color:rgba(255,255,255,.82)}
+.files:not(:focus-within) .row.sel{background:var(--sel-inactive);color:var(--text)}
+.files:not(:focus-within) .row.sel .c-date,.files:not(:focus-within) .row.sel .c-size,.files:not(:focus-within) .row.sel .c-kind{color:var(--text2)}
+.cut{opacity:.45}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:4px;padding-top:14px}
+.tile{display:flex;flex-direction:column;align-items:center;padding:6px 4px;border-radius:10px;gap:5px;min-width:0}
+.tile .ic{padding:5px;border-radius:9px}
+.tile .nm{font-size:12px;text-align:center;line-height:1.3;padding:1px 6px;border-radius:5px;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.tile .sub{font-size:11px;color:var(--text3);margin-top:-3px}
+.tile.sel .ic{background:var(--sel-inactive)}
+.tile.sel .nm{background:var(--sel);color:#fff}
+.files:not(:focus-within) .tile.sel .nm{background:var(--sel-inactive);color:var(--text)}
+.drop-target{background:var(--accent-soft)!important;outline:2px solid var(--accent);outline-offset:-2px;color:var(--text)!important}
+.tile.drop-target .nm{background:none!important;color:var(--text)!important}
+.empty{min-height:calc(100% - 40px);display:grid;place-items:center;text-align:center;color:var(--text2);padding:24px}
+.empty .box{display:grid;gap:6px;justify-items:center;padding:30px 40px;border:1.5px dashed var(--border-strong);border-radius:18px}
+.empty .box b{color:var(--text);font-size:14px;font-weight:600}
+.loading{display:grid;place-items:center;height:60%;color:var(--text3)}
+.files-wrap.drop-here::after{content:"";position:absolute;inset:6px;border:2px solid var(--accent);border-radius:12px;background:var(--accent-soft);pointer-events:none;z-index:5}
+.drop-label{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:#fff;padding:8px 16px;border-radius:999px;font-weight:600;z-index:6;pointer-events:none;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}
+
+.statusbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 12px;border-top:1px solid var(--border);font-size:11.5px;color:var(--text2);min-width:0}
+.pathbar{display:flex;align-items:center;gap:1px;min-width:0;overflow:hidden}
+.crumb{display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border-radius:5px;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+.crumb:hover{background:var(--hover);color:var(--text)}
+.pathbar .chev{color:var(--text3);flex:none}
+.status-right{white-space:nowrap;flex:none}
+
+/* ---------- menus, dialogs, toasts ---------- */
+.menu{position:fixed;z-index:70;min-width:210px;max-width:320px;background:var(--panel);border:1px solid var(--border-strong);border-radius:11px;padding:5px;display:grid}
+.mi{display:flex;justify-content:space-between;align-items:center;gap:24px;height:26px;padding:0 10px;border-radius:6px;text-align:left;white-space:nowrap}
+.mi span{overflow:hidden;text-overflow:ellipsis}
+.mi:hover:not(:disabled),.mi.kb{background:var(--accent);color:#fff}
+.mi:hover kbd,.mi.kb kbd{color:rgba(255,255,255,.8)}
+.mi:disabled{color:var(--text3)}
+.mi.danger{color:var(--danger)}
+.mi.danger:hover{background:var(--danger);color:#fff}
+.mi kbd{color:var(--text3);font-size:12px}
+.sep{height:1px;background:var(--border);margin:4px 8px}
+.scrim{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:60;padding:16px}
+.dialog{background:var(--panel);border:1px solid var(--border-strong);border-radius:16px;width:min(400px,100%);padding:22px;max-height:calc(100vh - 32px);overflow:auto}
+.dialog.wide{width:min(480px,100%)}
+.dialog h3{margin:0 0 6px;font-size:14px;font-weight:650}
+.dialog p{margin:0 0 14px;color:var(--text2);line-height:1.45}
+.dialog .field{margin-bottom:14px}
+.dialog form{display:block}
+.dlg-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.dlg-btns .left{margin-right:auto}
+.dlg-icon{width:44px;height:44px;margin-bottom:12px}
+.kv{display:grid;grid-template-columns:84px 1fr;gap:7px 12px;font-size:12.5px;margin:6px 0 18px}
+.kv dt{color:var(--text2);text-align:right}
+.kv dd{margin:0;word-break:break-all;-webkit-user-select:text;user-select:text}
+.mono{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--input);border-radius:8px;padding:8px 10px;word-break:break-all;-webkit-user-select:text;user-select:text;margin:0 0 14px}
+.toast{position:fixed;left:50%;bottom:46px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:999px;z-index:80;font-weight:500;max-width:calc(100vw - 32px);text-align:center}
+.toast.bad{background:var(--danger);color:#fff}
+.ql{width:min(960px,100%);padding:0;overflow:hidden;display:flex;flex-direction:column}
+.ql-view{background:var(--ql);display:grid;place-items:center;min-height:260px;max-height:72vh;overflow:hidden}
+.ql-view img,.ql-view video{max-width:100%;max-height:72vh;display:block}
+.ql-view audio{width:80%}
+.ql-view pre{margin:0;padding:18px;width:100%;height:100%;max-height:72vh;overflow:auto;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;-webkit-user-select:text;user-select:text;text-align:left;background:var(--bg)}
+.ql-view .nope{color:var(--text2);text-align:center;display:grid;gap:10px;justify-items:center;padding:30px}
+.ql-foot{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border)}
+.ql-foot .info{flex:1;min-width:0}
+.ql-foot .info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ql-foot .info small{color:var(--text2)}
+
+/* ---------- transfers ---------- */
+.transfers{position:fixed;right:16px;bottom:44px;width:min(390px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--border-strong);border-radius:16px;z-index:50;display:flex;flex-direction:column;max-height:min(62vh,560px)}
+.tr-head{display:flex;align-items:center;gap:10px;padding:12px 10px 10px 14px}
+.tr-head .tt{flex:1;min-width:0}
+.tr-head .t{font-weight:650}
+.tr-head .s{font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--text2);flex:none}
+.icon-btn:hover{background:var(--hover);color:var(--text)}
+.tr-bar{margin:0 14px 12px}
+.tr-bar i,.tj .bar i{background:var(--accent);transition:width .25s linear}
+.tr-list{overflow:auto;border-top:1px solid var(--border);padding:6px}
+.tj{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 8px;border-radius:9px}
+.tj:hover{background:var(--hover)}
+.tj .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.tj .meta{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tj .bar{height:4px;margin:5px 0 4px}
+.tj.done .meta{color:var(--ok)}
+.tj.error .meta{color:var(--danger)}
+.tj .acts{display:flex;gap:2px}
+.tr-foot{border-top:1px solid var(--border);padding:9px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tr-foot .check{font-size:12px}
+
+.sb-scrim{display:none}
+.only-narrow{display:none!important}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:fixed;inset:0 auto 0 0;width:270px;z-index:45;transform:translateX(-102%);transition:transform .2s}
+  .app.sb-open .sidebar{transform:none}
+  .app.sb-open .sb-scrim{display:block;position:fixed;inset:0;background:var(--scrim);z-index:44}
+  .only-narrow{display:inline-flex!important}
+  :root{--cols:minmax(0,1fr) 84px}
+  .c-date,.c-kind,.list-head .h-date,.list-head .h-kind{display:none!important}
+  .search{width:110px}
+  .wide-only{display:none!important}
+  .tb-title{max-width:none}
+}
+
+/* ---------- standalone app window (Electron) ---------- */
+.app-mode .sidebar{padding-top:0}
+.app-mode .sb-head{height:46px;padding:0;-webkit-app-region:drag}
+.app-mode .sb-head>*{display:none}
+.app-mode .toolbar{-webkit-app-region:drag}
+.app-mode .toolbar button,.app-mode .toolbar label,.app-mode .toolbar .seg{-webkit-app-region:no-drag}
+.app-mode .connect{-webkit-app-region:drag}
+.app-mode .cc,.app-mode .scrim,.app-mode .menu,.app-mode .transfers,.app-mode .toast,.app-mode .sb-scrim{-webkit-app-region:no-drag}
+@media (max-width:760px){.app-mode .toolbar{padding-left:84px}}
+</style>
+</head>
+<body>
+
+<!-- ================= Connect ================= -->
+<div id="connect" class="connect" hidden>
+  <div class="cc">
+    <div class="cc-head">
+      <img src="/icon.svg" alt="">
+      <h1>Dropfin</h1>
+      <p id="cc-sub">Move movies onto your media server</p>
+    </div>
+    <div id="cc-body"></div>
+  </div>
+</div>
+
+<!-- ================= App ================= -->
+<div id="app" class="app" hidden>
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head"><img src="/icon.svg" alt=""><div class="sb-title">Dropfin</div></div>
+    <nav id="sb-nav"></nav>
+    <div class="sb-foot">
+      <div class="storage" id="storage"></div>
+      <button class="sb-conn" id="sb-conn" title="Server options"><i class="dot" id="conn-dot"></i><span id="conn-name"></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5.5" cy="12" r=".6"/><circle cx="12" cy="12" r=".6"/><circle cx="18.5" cy="12" r=".6"/></svg></button>
+    </div>
+  </aside>
+  <div class="sb-scrim" id="sb-scrim"></div>
+  <main class="main">
+    <header class="toolbar">
+      <button class="tb only-narrow" id="btn-sidebar" title="Sidebar"></button>
+      <button class="tb" id="btn-back" title="Back (⌘[)"></button>
+      <button class="tb" id="btn-fwd" title="Forward (⌘])"></button>
+      <button class="tb-title" id="title" title="Go to Folder… (⇧⌘G)"></button>
+      <div class="tb-spacer"></div>
+      <div class="seg wide-only" id="seg-view">
+        <button data-view="grid" title="Icons (⌘1)"></button>
+        <button data-view="list" title="List (⌘2)"></button>
+      </div>
+      <button class="tb" id="btn-newfolder" title="New Folder (⇧⌘N)"></button>
+      <button class="tb" id="btn-upload" title="Upload"></button>
+      <button class="tb" id="btn-download" title="Download to your Mac"></button>
+      <button class="tb" id="btn-scan" title="Scan Jellyfin library" hidden></button>
+      <label class="search"><span id="search-ic"></span><input id="search" type="search" placeholder="Search" autocomplete="off" spellcheck="false"></label>
+    </header>
+    <div class="files-wrap" id="files-wrap">
+      <section class="files" id="files" tabindex="0">
+        <div class="list-head" id="list-head"></div>
+        <div id="file-body"></div>
+      </section>
+      <div class="drop-label" id="drop-label" hidden></div>
+    </div>
+    <footer class="statusbar"><div class="pathbar" id="pathbar"></div><div class="status-right" id="status-right"></div></footer>
+  </main>
+</div>
+
+<div class="transfers" id="transfers" hidden>
+  <div class="tr-head">
+    <div class="tt"><div class="t" id="tr-title"></div><div class="s" id="tr-sub"></div></div>
+    <button class="icon-btn" id="tr-toggle" title="Show or hide details"></button>
+    <button class="icon-btn" id="tr-close" title="Clear finished"></button>
+  </div>
+  <div class="bar tr-bar"><i id="tr-bar"></i></div>
+  <div class="tr-list" id="tr-list"></div>
+  <div class="tr-foot" id="tr-foot"><label class="check"><input type="checkbox" id="tr-scan"> Scan Jellyfin library when uploads finish</label></div>
+</div>
+
+<div id="menu" class="menu" hidden></div>
+<div id="toast" class="toast" hidden></div>
+<input type="file" id="pick-files" multiple hidden>
+<input type="file" id="pick-folder" webkitdirectory multiple hidden>
+
+<script>
+'use strict';
+const TOKEN = document.querySelector('meta[name="dropfin-token"]').content;
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+const IS_APP = !!window.__DROPFIN_APP__ || /Electron\//.test(navigator.userAgent);
+if (IS_APP) document.documentElement.classList.add('app-mode');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('dropfin.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('dropfin.' + k, JSON.stringify(v)); } catch {} },
+};
+
+/* ------------------------------------------------------------ icons */
+const ic = (d, s = 18, w = 1.7) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const FOLDER_D = '<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h3.6l2 2h7.4A2.5 2.5 0 0 1 21 9.5v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/>';
+const I = {
+  back: ic('<path d="M15 18l-6-6 6-6"/>', 20),
+  fwd: ic('<path d="M9 18l6-6-6-6"/>', 20),
+  list: ic('<path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" stroke-width="2.4"/>', 17),
+  grid: ic('<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>', 17),
+  newFolder: ic(FOLDER_D + '<path d="M12 10.5v6M9 13.5h6"/>', 19),
+  upload: ic('<path d="M12 15V4.5M7.5 9L12 4.5 16.5 9"/><path d="M4.5 14.5v3a2.5 2.5 0 0 0 2.5 2.5h10a2.5 2.5 0 0 0 2.5-2.5v-3"/>', 19),
+  download: ic('<path d="M12 4.5V15M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 14.5v3a2.5 2.5 0 0 0 2.5 2.5h10a2.5 2.5 0 0 0 2.5-2.5v-3"/>', 19),
+  scan: ic('<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>', 18),
+  search: ic('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>', 15),
+  film: ic('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M7.5 4.5v15M16.5 4.5v15M3.5 9.5h4M3.5 14.5h4M16.5 9.5h4M16.5 14.5h4"/>', 17),
+  tv: ic('<rect x="3" y="5" width="18" height="12" rx="2.5"/><path d="M8.5 20h7"/>', 17),
+  music: ic('<path d="M9 17.5V6l10.5-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="17" cy="15.5" r="2.5"/>', 17),
+  book: ic('<path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H18"/>', 17),
+  photo: ic('<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 16l-5-5-8.5 8"/>', 17),
+  folder: ic(FOLDER_D, 17),
+  home: ic('<path d="M4 11l8-6.5 8 6.5"/><path d="M6 9.5V19h12V9.5"/>', 17),
+  drive: ic('<rect x="3.5" y="13" width="17" height="6.5" rx="2"/><path d="M5.5 13l2-7.5h9l2 7.5"/><path d="M17 16.3h.01" stroke-width="2.4"/>', 17),
+  pin: ic('<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.2"/>', 17),
+  sidebar: ic('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/>', 19),
+  x: ic('<path d="M7 7l10 10M17 7L7 17"/>', 15),
+  pause: ic('<path d="M9 7v10M15 7v10"/>', 15, 2),
+  play: ic('<path d="M8.5 6.5v11l9-5.5z"/>', 14),
+  retry: ic('<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>', 15),
+  reveal: ic('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>', 15),
+  chevD: ic('<path d="M6 9l6 6 6-6"/>', 15),
+  chevU: ic('<path d="M6 15l6-6 6 6"/>', 15),
+  chevR: ic('<path d="M9.5 6l6 6-6 6"/>', 12),
+  server: ic('<rect x="4" y="4" width="16" height="7" rx="2"/><rect x="4" y="13" width="16" height="7" rx="2"/><path d="M8 7.5h.01M8 16.5h.01" stroke-width="2.4"/>', 22),
+  edit: ic('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>', 16),
+  up: ic('<path d="M12 19V5M6 11l6-6 6 6"/>', 15),
+  down: ic('<path d="M12 5v14M6 13l6 6 6-6"/>', 15),
+  warn: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>', 40, 1.6),
+};
+const ROOT_ICONS = { movies: I.film, tvshows: I.tv, music: I.music, musicvideos: I.music, homevideos: I.film, books: I.book, photos: I.photo, boxsets: I.film, mixed: I.folder };
+
+const EXT = {
+  video: 'mkv mp4 m4v avi mov wmv ts m2ts mts webm mpg mpeg flv iso vob 3gp ogv rmvb divx'.split(' '),
+  subtitle: 'srt ass ssa sub idx vtt sup smi'.split(' '),
+  image: 'jpg jpeg png webp gif bmp tiff tif heic avif'.split(' '),
+  audio: 'mp3 flac m4a aac ogg opus wav alac wma ape dsf m4b'.split(' '),
+  text: 'nfo txt log md xml json cue svg html'.split(' '),
+  archive: 'zip rar 7z tar gz tgz bz2 xz'.split(' '),
+};
+const KIND_COLOR = { video: '#7b5cf5', subtitle: '#23a559', image: '#ef4565', audio: '#f26b3a', text: '#8e8e93', archive: '#c08a2e', other: '#8e8e93' };
+const KIND_NAME = { mkv: 'Matroska video', mp4: 'MPEG-4 movie', m4v: 'MPEG-4 movie', mov: 'QuickTime movie', avi: 'AVI movie', ts: 'MPEG transport stream', m2ts: 'Blu-ray video', webm: 'WebM video', iso: 'Disc image',
+  srt: 'SubRip subtitles', ass: 'ASS subtitles', ssa: 'SSA subtitles', vtt: 'WebVTT subtitles', sup: 'Blu-ray subtitles', idx: 'VobSub index', sub: 'Subtitles',
+  nfo: 'NFO metadata', jpg: 'JPEG image', jpeg: 'JPEG image', png: 'PNG image', webp: 'WebP image', gif: 'GIF image', mp3: 'MP3 audio', flac: 'FLAC audio', m4a: 'MPEG-4 audio',
+  txt: 'Plain text', zip: 'ZIP archive', rar: 'RAR archive', '7z': '7-Zip archive' };
+const extOf = (n) => { const i = n.lastIndexOf('.'); return i > 0 ? n.slice(i + 1).toLowerCase() : ''; };
+function kindOf(e) { if (e.dir) return 'folder'; const x = extOf(e.name); for (const k in EXT) if (EXT[k].includes(x)) return k; return 'other'; }
+function kindLabel(e) { if (e.dir) return 'Folder'; const x = extOf(e.name); return KIND_NAME[x] || (x ? x.toUpperCase() + ' file' : 'Document'); }
+
+function folderSVG(s) {
+  return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" aria-hidden="true"><path d="M5 15.5A4.5 4.5 0 0 1 9.5 11h14.2c1.3 0 2.5.5 3.4 1.4L30.8 16H54.5A4.5 4.5 0 0 1 59 20.5V49a4.5 4.5 0 0 1-4.5 4.5h-45A4.5 4.5 0 0 1 5 49z" fill="var(--folder-back)"/><path d="M5 25A4.5 4.5 0 0 1 9.5 20.5h45A4.5 4.5 0 0 1 59 25v24a4.5 4.5 0 0 1-4.5 4.5h-45A4.5 4.5 0 0 1 5 49z" fill="var(--folder)"/></svg>`;
+}
+function docSVG(s, kind, ext) {
+  const c = KIND_COLOR[kind];
+  const g = {
+    video: `<rect x="19" y="27" width="24" height="17" rx="3.5" fill="${c}"/><path d="M28.5 31.5v8l6.5-4z" fill="#fff"/>`,
+    subtitle: `<rect x="18" y="28" width="26" height="16" rx="3.5" fill="${c}"/><path d="M22.5 34.5h8M33.5 34.5h6M22.5 38.5h5M30.5 38.5h9" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>`,
+    image: `<rect x="18" y="27" width="26" height="18" rx="3.5" fill="${c}"/><circle cx="25" cy="32.5" r="2.3" fill="#fff"/><path d="M20.5 43l7.5-7 4.5 4 3.5-3 6 6z" fill="#fff"/>`,
+    audio: `<path d="M27.5 41.5V30l12-3v11.5" stroke="${c}" stroke-width="2.6" fill="none" stroke-linejoin="round"/><circle cx="24.5" cy="41.5" r="3.6" fill="${c}"/><circle cx="36.5" cy="38.5" r="3.6" fill="${c}"/>`,
+    text: `<path d="M20 27.5h22M20 32.5h22M20 37.5h22M20 42.5h13" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/>`,
+    archive: `<path d="M31 9v3M31 15v3M31 21v3" stroke="${c}" stroke-width="3"/><rect x="27" y="27" width="8" height="11" rx="2" fill="${c}"/>`,
+    other: '',
+  }[kind];
+  const badge = s >= 48 && ext ? `<rect x="14" y="47" width="34" height="10" rx="3" fill="${c}"/><text x="31" y="54.3" text-anchor="middle" font-size="7" font-weight="700" fill="#fff" font-family="-apple-system,system-ui,sans-serif">${esc(ext.slice(0, 4).toUpperCase())}</text>` : '';
+  return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" aria-hidden="true"><path d="M15 6h22.5L51 19.5V54a4 4 0 0 1-4 4H15a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4z" fill="var(--doc)" stroke="var(--doc-stroke)" stroke-width="1.6"/><path d="M37.5 6v9.5a4 4 0 0 0 4 4H51" fill="none" stroke="var(--doc-stroke)" stroke-width="1.6"/>${g}${badge}</svg>`;
+}
+const fileIcon = (e, s) => (e.dir ? folderSVG(s) : docSVG(s, kindOf(e), extOf(e.name)));
+
+/* ------------------------------------------------------------ formatting */
+function fmtSize(b) {
+  if (b == null) return '--';
+  if (b < 1000) return b + ' bytes';
+  const u = ['KB', 'MB', 'GB', 'TB', 'PB']; let i = -1;
+  do { b /= 1000; i++; } while (b >= 1000 && i < u.length - 1);
+  return (b >= 100 ? Math.round(b) : b >= 10 ? b.toFixed(1) : b.toFixed(2)).toString().replace(/\.0+$|(\.\d*?)0+$/, '$1') + ' ' + u[i];
+}
+const fmtSpeed = (bps) => (bps > 0 ? fmtSize(bps) + '/s' : '');
+function fmtEta(sec) {
+  if (!isFinite(sec) || sec <= 0) return '';
+  if (sec < 60) return Math.ceil(sec) + ' sec left';
+  if (sec < 3600) return Math.ceil(sec / 60) + ' min left';
+  const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
+  return `${h} hr ${m} min left`;
+}
+const timeFmt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+const dateFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+function fmtDate(sec) {
+  if (!sec) return '--';
+  const d = new Date(sec * 1000), now = new Date();
+  const day = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day(now) - day(d)) / 86400000);
+  if (diff === 0) return 'Today at ' + timeFmt.format(d);
+  if (diff === 1) return 'Yesterday at ' + timeFmt.format(d);
+  return dateFmt.format(d) + ' at ' + timeFmt.format(d);
+}
+const plural = (n, w) => `${n.toLocaleString()} ${w}${n === 1 ? '' : 's'}`;
+
+/* ------------------------------------------------------------ paths */
+const pjoin = (a, b) => (a === '/' ? '/' + b : a + '/' + b);
+const parentOf = (p) => { const i = p.lastIndexOf('/'); return i <= 0 ? '/' : p.slice(0, i); };
+const baseOf = (p) => p.slice(p.lastIndexOf('/') + 1) || '/';
+const within = (p, root) => p === root || p.startsWith(root === '/' ? '/' : root + '/');
+
+/* ------------------------------------------------------------ api */
+class HttpError extends Error { constructor(m, status, data) { super(m); this.status = status; this.data = data || {}; } }
+function qs(p) {
+  const u = new URLSearchParams();
+  for (const [k, v] of Object.entries(p || {})) { if (v == null) continue; if (Array.isArray(v)) v.forEach((x) => u.append(k, x)); else u.append(k, v); }
+  return u.toString();
+}
+async function api(method, p, params, body, opts = {}) {
+  let r;
+  try {
+    r = await fetch('/api/' + p + (params ? '?' + qs(params) : ''), {
+      method, headers: { 'X-Dropfin-Token': TOKEN, ...(method === 'POST' ? { 'Content-Type': 'application/json' } : {}) },
+      body: method === 'POST' ? JSON.stringify(body || {}) : undefined,
+    });
+  } catch { throw new HttpError("Dropfin isn't running anymore. Open the Dropfin app again.", 0, { reason: 'gone' }); }
+  let data = null;
+  try { data = await r.json(); } catch {}
+  if (!r.ok) {
+    const err = new HttpError((data && data.error) || r.statusText || 'Something went wrong', r.status, data);
+    if (data && data.reason === 'token') { location.reload(); }
+    if (data && data.reason === 'disconnected' && !opts.quiet) showConnect();
+    throw err;
+  }
+  return data;
+}
+
+/* ------------------------------------------------------------ state */
+const S = {
+  servers: [], server: null, home: '/', path: null, entries: [], vis: [], free: null, total: null,
+  side: { pins: [], libraries: [], jellyfin: false }, view: LS.get('view', 'list'), sort: LS.get('sort', { key: 'name', dir: 1 }),
+  sel: new Set(), anchor: null, focus: null, filter: '', back: [], fwd: [], clip: null, loadSeq: 0, loading: false, prefs: {}, downloadsDir: '~/Downloads',
+};
+
+/* ------------------------------------------------------------ toast, menu, modal */
+let toastTimer;
+function toast(msg, bad) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast' + (bad ? ' bad' : ''); t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, bad ? 5200 : 2800);
+}
+const showError = (e) => toast(e && e.message ? e.message : String(e), true);
+
+const menuEl = $('#menu');
+let menuItems = [];
+function showMenu(items, x, y, anchorEl) {
+  items = items.filter(Boolean).filter((it, i, a) => !(it === '-' && (i === 0 || a[i - 1] === '-' || i === a.length - 1)));
+  if (items[items.length - 1] === '-') items.pop();
+  menuItems = items;
+  menuEl.innerHTML = items.map((it, i) => it === '-' ? '<div class="sep"></div>' :
+    `<button class="mi${it.danger ? ' danger' : ''}" data-i="${i}" ${it.disabled ? 'disabled' : ''}><span>${esc(it.label)}</span>${it.kbd ? `<kbd>${esc(it.kbd)}</kbd>` : ''}</button>`).join('');
+  menuEl.hidden = false;
+  const r = menuEl.getBoundingClientRect();
+  if (anchorEl) { const a = anchorEl.getBoundingClientRect(); x = Math.min(a.left, innerWidth - r.width - 8); y = a.bottom + 4; if (y + r.height > innerHeight - 8) y = a.top - r.height - 4; }
+  menuEl.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + 'px';
+  menuEl.style.top = Math.max(8, Math.min(y, innerHeight - r.height - 8)) + 'px';
+}
+function hideMenu() { menuEl.hidden = true; }
+menuEl.addEventListener('click', (e) => { const b = e.target.closest('.mi'); if (!b || b.disabled) return; hideMenu(); const it = menuItems[+b.dataset.i]; it && it.action && it.action(); });
+document.addEventListener('mousedown', (e) => { if (!menuEl.hidden && !menuEl.contains(e.target)) hideMenu(); }, true);
+window.addEventListener('blur', hideMenu);
+window.addEventListener('resize', hideMenu);
+
+let modalOpen = 0;
+/** Generic dialog. Returns {value, input, checked} or null if dismissed. */
+function modal({ title, message, html, input, inputValue = '', placeholder = '', selectStem = false, check, checked = false, buttons, wide, icon, onOpen }) {
+  return new Promise((resolve) => {
+    modalOpen++;
+    hideMenu();
+    const scrim = document.createElement('div');
+    scrim.className = 'scrim';
+    buttons = buttons || [{ label: 'Cancel', value: null }, { label: 'OK', value: true, primary: true }];
+    scrim.innerHTML = `<form class="dialog${wide ? ' wide' : ''}" novalidate>
+      ${icon ? `<div class="dlg-icon">${icon}</div>` : ''}
+      ${title ? `<h3>${esc(title)}</h3>` : ''}
+      ${message ? `<p>${esc(message)}</p>` : ''}
+      ${html || ''}
+      ${input ? `<input class="field" name="v" autocomplete="off" spellcheck="false" placeholder="${esc(placeholder)}" value="${esc(inputValue)}">` : ''}
+      ${check ? `<label class="check" style="margin:-2px 0 16px"><input type="checkbox" name="c" ${checked ? 'checked' : ''}> ${esc(check)}</label>` : ''}
+      <div class="dlg-btns">${buttons.map((b, i) => `<button type="${b.primary ? 'submit' : 'button'}" class="btn${b.primary ? ' primary' : ''}${b.danger ? ' danger' : ''}${b.left ? ' left' : ''}" data-i="${i}">${esc(b.label)}</button>`).join('')}</div>
+    </form>`;
+    document.body.appendChild(scrim);
+    const form = scrim.firstElementChild;
+    const inp = form.querySelector('input[name=v]');
+    const finish = (val) => {
+      if (!scrim.isConnected) return;
+      scrim.remove(); modalOpen--; document.removeEventListener('keydown', onKey, true);
+      resolve(val === null || val === undefined ? null : { value: val, input: inp ? inp.value : undefined, checked: form.c ? form.c.checked : undefined, form });
+    };
+    const primary = buttons.find((b) => b.primary);
+    form.addEventListener('submit', (e) => { e.preventDefault(); if (primary) { if (primary.validate && !primary.validate(form)) return; finish(primary.value); } });
+    form.addEventListener('click', (e) => { const b = e.target.closest('.dlg-btns button'); if (b && b.type === 'button') finish(buttons[+b.dataset.i].value); });
+    scrim.addEventListener('mousedown', (e) => { if (e.target === scrim) finish(null); });
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(null); } };
+    document.addEventListener('keydown', onKey, true);
+    if (onOpen) onOpen(form, finish);
+    requestAnimationFrame(() => {
+      if (inp) {
+        inp.focus();
+        const v = inp.value, dot = v.lastIndexOf('.');
+        if (selectStem && dot > 0) inp.setSelectionRange(0, dot); else inp.select();
+      } else { const f = form.querySelector('input,.btn.primary'); f && f.focus(); }
+    });
+  });
+}
+const confirmDlg = (title, message, label = 'OK', danger = false) =>
+  modal({ title, message, buttons: [{ label: 'Cancel', value: null }, { label, value: true, primary: true, danger }] });
+
+/* ------------------------------------------------------------ connect screen */
+async function boot() {
+  let st;
+  try { st = await api('GET', 'state'); }
+  catch (e) { $('#connect').hidden = false; $('#cc-body').innerHTML = `<p class="err">${esc(e.message)}</p>`; return; }
+  S.servers = st.servers; S.prefs = st.prefs || {}; S.downloadsDir = st.downloads;
+  if (st.connected && st.connected.alive) {
+    S.server = S.servers.find((s) => s.id === st.connected.id); S.home = st.connected.home;
+    if (S.server) return enterApp();
+  }
+  showConnect();
+}
+
+function showConnect(mode) {
+  $('#app').hidden = true; $('#transfers').hidden = true;
+  $('#connect').hidden = false;
+  if (!S.servers.length || mode === 'add') return renderServerForm(null);
+  const last = S.servers.find((s) => s.id === LS.get('lastServer')) || S.servers[0];
+  const others = S.servers.filter((s) => s !== last);
+  $('#cc-sub').textContent = 'Ready when you are';
+  $('#cc-body').innerHTML = `
+    ${serverCard(last)}
+    <button class="btn primary big cc-main-btn" id="cc-connect">Connect</button>
+    <p class="err" id="cc-err" hidden style="margin:12px 0 0"></p>
+    ${others.length ? `<div class="sb-section" style="padding:20px 2px 8px">Other servers</div>${others.map(serverCard).join('')}` : ''}
+    <div class="cc-foot"><button class="link" id="cc-add">Add a server…</button><span class="hint">Over SSH · nothing to install on the server</span></div>`;
+  const go = (srv) => doConnect(srv, null, $('#cc-connect'));
+  $('#cc-connect').onclick = () => go(last);
+  $('#cc-add').onclick = () => renderServerForm(null);
+  $('#cc-body').querySelectorAll('.srv').forEach((el) => {
+    const srv = S.servers.find((s) => s.id === el.dataset.id);
+    el.querySelector('.srv-edit').onclick = (e) => { e.stopPropagation(); renderServerForm(srv); };
+    if (srv !== last) el.addEventListener('dblclick', () => go(srv));
+    if (srv !== last) el.querySelector('.srv-go').onclick = () => go(srv);
+  });
+  setTimeout(() => $('#cc-connect') && $('#cc-connect').focus(), 30);
+}
+function serverCard(s) {
+  return `<div class="srv" data-id="${esc(s.id)}"><div class="srv-ic">${I.server}</div><div class="srv-txt"><div class="srv-name">${esc(s.name || s.host)}</div><div class="srv-sub">${esc(s.username)}@${esc(s.host)}${s.port && s.port !== 22 ? ':' + s.port : ''}</div></div>
+    ${s.id !== (S.servers.find((x) => x.id === LS.get('lastServer')) || S.servers[0]).id ? '<button class="btn srv-go">Connect</button>' : ''}<button class="srv-edit" title="Edit">${I.edit}</button></div>`;
+}
+
+function renderServerForm(srv) {
+  const isNew = !srv;
+  $('#cc-sub').textContent = isNew ? 'Connect to the computer that runs Jellyfin' : 'Edit server';
+  $('#cc-body').innerHTML = `
+    <form id="srv-form" autocomplete="on">
+      <div id="found" class="found"></div>
+      <div class="row2">
+        <div><label class="lbl" for="f-host">Server address</label><input class="field" id="f-host" name="host" placeholder="192.168.1.20 or nas.local" value="${esc(srv ? srv.host : '')}" autocapitalize="off" spellcheck="false" required></div>
+        <div><label class="lbl" for="f-port">SSH port</label><input class="field" id="f-port" name="port" inputmode="numeric" value="${esc(srv ? srv.port || 22 : 22)}"></div>
+      </div>
+      <div><label class="lbl" for="f-user">Username</label><input class="field" id="f-user" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" value="${esc(srv ? srv.username : '')}" placeholder="The account you'd use with ssh or scp" required></div>
+      <div><label class="lbl" for="f-pass">Password</label><input class="field" id="f-pass" name="password" type="password" autocomplete="current-password" placeholder="${srv ? 'Leave empty to keep the saved one' : 'Not needed if you use SSH keys'}"></div>
+      <label class="check"><input type="checkbox" id="f-remember" checked> Remember password in Keychain</label>
+      <div><label class="lbl" for="f-name">Name <span style="color:var(--text3);font-weight:400">(optional)</span></label><input class="field" id="f-name" name="name" value="${esc(srv ? srv.name || '' : '')}" placeholder="Living Room Server"></div>
+      <p class="err" id="cc-err" hidden></p>
+      <button class="btn primary big" type="submit" id="f-submit">${isNew ? 'Connect' : 'Save & Connect'}</button>
+      <div class="cc-foot" style="margin-top:0">
+        ${S.servers.length ? '<button type="button" class="link" id="f-cancel">Back</button>' : '<span></span>'}
+        ${srv ? '<button type="button" class="link" id="f-delete" style="color:var(--danger)">Remove server</button>' : ''}
+      </div>
+    </form>`;
+  const form = $('#srv-form');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = $('#f-submit'); const err = $('#cc-err'); err.hidden = true;
+    const body = { id: srv && srv.id, host: form.host.value, port: form.port.value, username: form.username.value, name: form.name.value };
+    if (form.dataset.jf) body.jellyfinUrl = form.dataset.jf;
+    try {
+      const r = await api('POST', 'servers/save', null, body);
+      upsertServer(r.server);
+      await doConnect(r.server, form.password.value || null, btn, $('#f-remember').checked);
+    } catch (ex) { err.textContent = ex.message; err.hidden = false; }
+  };
+  const cancel = $('#f-cancel'); if (cancel) cancel.onclick = () => showConnect();
+  const del = $('#f-delete');
+  if (del) del.onclick = async () => {
+    if (!(await confirmDlg(`Remove “${srv.name || srv.host}”?`, 'Its saved password is removed from your Keychain. Nothing on the server changes.', 'Remove', true))) return;
+    await api('POST', 'servers/delete', null, { id: srv.id });
+    S.servers = S.servers.filter((s) => s.id !== srv.id); showConnect();
+  };
+  setTimeout(() => (form.host.value ? form.username : form.host).focus(), 30);
+  if (isNew) discover(form);
+}
+async function discover(form) {
+  const box = $('#found');
+  box.innerHTML = `<span class="hint" style="display:flex;gap:8px;align-items:center"><span class="spin"></span>Looking for Jellyfin on your network…</span>`;
+  let found = [];
+  try { found = (await api('GET', 'discover')).servers; } catch {}
+  if (!box.isConnected) return;
+  if (!found.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<span class="hint" style="width:100%">Found on your network:</span>` + found.map((f, i) => `<button type="button" class="chip" data-i="${i}">${I.server.replace(/22/g, '14')} ${esc(f.name)} · ${esc(f.host)}</button>`).join('');
+  box.onclick = (e) => {
+    const c = e.target.closest('.chip'); if (!c) return;
+    const f = found[+c.dataset.i];
+    form.host.value = f.host; if (!form.name.value) form.name.value = f.name; form.dataset.jf = f.url;
+    form.username.focus();
+  };
+  if (found.length === 1 && !form.host.value) { form.host.value = found[0].host; form.name.value = found[0].name; form.dataset.jf = found[0].url; }
+}
+function upsertServer(s) { const i = S.servers.findIndex((x) => x.id === s.id); if (i >= 0) S.servers[i] = s; else S.servers.push(s); }
+
+async function doConnect(srv, password, btn, remember = true) {
+  const label = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Connecting…'; }
+  const err = $('#cc-err'); if (err) err.hidden = true;
+  try {
+    const r = await api('POST', 'connect', null, { id: srv.id, password, remember }, { quiet: true });
+    upsertServer(r.server);
+    S.server = r.server; S.home = r.home;
+    LS.set('lastServer', srv.id);
+    await enterApp();
+    if (r.firstTime) toast(`Connected to ${srv.name || srv.host}. Its identity has been saved.`);
+  } catch (e) {
+    const reason = e.data && e.data.reason;
+    if (reason === 'needPassword' || reason === 'auth') {
+      if (btn) { btn.disabled = false; btn.innerHTML = label; }
+      const r = await modal({ title: reason === 'auth' ? 'Password didn’t work' : 'Enter password', message: `Password for ${srv.username} on ${srv.host}.`,
+        html: '<input class="field" type="password" name="pw" autocomplete="current-password">', check: 'Remember in Keychain', checked: true,
+        buttons: [{ label: 'Cancel', value: null }, { label: 'Connect', value: true, primary: true }], onOpen: (f) => setTimeout(() => f.pw.focus(), 20) });
+      if (r) return doConnect(srv, r.form.pw.value, btn, r.checked);
+      return;
+    }
+    if (reason === 'hostkey') {
+      if (btn) { btn.disabled = false; btn.innerHTML = label; }
+      const r = await modal({ icon: `<span style="color:var(--danger)">${I.warn}</span>`, title: 'Server identity changed', message: e.message, wide: true,
+        html: `<div class="hint" style="margin-bottom:4px">Saved</div><div class="mono">${esc(e.data.saved || '')}</div><div class="hint" style="margin-bottom:4px">Now</div><div class="mono">${esc(e.data.fingerprint || '')}</div>`,
+        buttons: [{ label: 'Cancel', value: null }, { label: 'Trust New Identity', value: true, primary: true, danger: true }] });
+      if (r) { await api('POST', 'servers/trust', null, { id: srv.id }); srv.hostKey = null; return doConnect(srv, password, btn, remember); }
+      return;
+    }
+    if (err) { err.textContent = e.message; err.hidden = false; } else showError(e);
+  } finally {
+    if (btn && btn.isConnected) { btn.disabled = false; btn.innerHTML = label; }
+  }
+}
+
+/* ------------------------------------------------------------ app */
+async function enterApp() {
+  $('#connect').hidden = true; $('#app').hidden = false;
+  $('#conn-name').textContent = S.server.name || S.server.host;
+  $('#conn-dot').classList.remove('off');
+  S.back = []; S.fwd = [];
+  await loadSidebar();
+  let start = S.server.lastPath || (S.side.libraries.find((l) => l.available) || {}).path || S.home;
+  await go(start, { push: false }).catch(() => {});
+  if (S.path == null) await go(S.home, { push: false });
+  $('#files').focus();
+  renderTransfers();
+}
+
+async function loadSidebar() {
+  try { S.side = await api('GET', 'sidebar'); } catch (e) { S.side = { pins: [], libraries: [], jellyfin: false }; if (e.status) showError(e); }
+  S.home = S.side.home || S.home;
+  $('#btn-scan').hidden = !S.side.jellyfin;
+  $('#tr-foot').hidden = !S.side.jellyfin;
+  $('#tr-scan').checked = S.server.autoScan !== false;
+  renderSidebar();
+}
+
+function renderSidebar() {
+  const item = (p, name, icon, extra = '') =>
+    `<button class="sb-item ${S.path && S.path === p ? 'active' : ''} ${extra}" data-path="${esc(p)}" title="${esc(p)}">${icon}<span>${esc(name)}</span></button>`;
+  let h = '';
+  const libs = S.side.libraries || [];
+  if (libs.length) {
+    h += '<div class="sb-section">Libraries</div>';
+    for (const l of libs) h += item(l.path, l.name, ROOT_ICONS[l.type] || I.folder, l.available ? '' : 'missing');
+  }
+  h += '<div class="sb-section">Favorites</div>' + item(S.home, 'Home', I.home);
+  for (const p of S.side.pins || []) h += item(p.path, p.name, I.folder, 'pin');
+  h += '<div class="sb-section">Server</div>' + item('/', S.server.name || S.server.host, I.drive);
+  if (!S.side.jellyfin) h += `<div class="sb-note">Tip: right-click a folder → Add to Sidebar. <button class="link" id="sb-jf" style="font-size:11.5px">Connect Jellyfin</button> to list your libraries here.</div>`;
+  else if (S.side.jellyfinError) h += `<div class="sb-note" style="color:var(--danger)">${esc(S.side.jellyfinError)}</div>`;
+  $('#sb-nav').innerHTML = h;
+  const jf = $('#sb-jf'); if (jf) jf.onclick = () => serverSettings();
+  renderStorage();
+}
+function renderStorage() {
+  const el = $('#storage');
+  if (S.free == null || !S.total) { el.innerHTML = ''; return; }
+  const used = 1 - S.free / S.total;
+  el.innerHTML = `<div class="lbl2"><span>${fmtSize(S.free)} available</span><span>${fmtSize(S.total)}</span></div><div class="bar"><i style="width:${(used * 100).toFixed(1)}%;${used > 0.92 ? 'background:var(--danger)' : ''}"></i></div>`;
+}
+
+$('#sb-nav').addEventListener('click', (e) => {
+  const b = e.target.closest('.sb-item'); if (!b) return;
+  if (b.classList.contains('missing')) {
+    return modal({ title: "Can't open this library", message: `Jellyfin says this library is at ${b.dataset.path}, but that folder doesn't exist for your SSH user. If Jellyfin runs in Docker, that's the path inside the container — browse to the real folder on the server and choose “Add to Sidebar”.`, buttons: [{ label: 'OK', value: true, primary: true }] });
+  }
+  go(b.dataset.path);
+  $('#app').classList.remove('sb-open');
+});
+$('#sb-nav').addEventListener('contextmenu', (e) => {
+  const b = e.target.closest('.sb-item'); if (!b) return;
+  e.preventDefault();
+  const p = b.dataset.path;
+  showMenu([
+    { label: 'Open', action: () => go(p) },
+    b.classList.contains('pin') ? { label: 'Remove from Sidebar', action: () => pin(p, null, true) } : null,
+  ], e.clientX, e.clientY);
+});
+$('#sb-scrim').onclick = () => $('#app').classList.remove('sb-open');
+
+$('#sb-conn').onclick = (e) => {
+  showMenu([
+    { label: 'Server Settings…', action: serverSettings },
+    { label: 'Refresh', kbd: '⌘R', action: () => { loadSidebar(); load(true); } },
+    '-',
+    { label: 'Disconnect', action: disconnect },
+    { label: 'Quit Dropfin', action: quitApp },
+  ], 0, 0, e.currentTarget);
+  const r = menuEl.getBoundingClientRect(), a = e.currentTarget.getBoundingClientRect();
+  menuEl.style.top = (a.top - r.height - 6) + 'px';
+};
+
+async function disconnect() {
+  if (activeUploads().length && !(await confirmDlg('Stop uploads?', 'Uploads in progress will pause. You can resume them by dropping the same files again.', 'Disconnect', true))) return;
+  uploads.filter((j) => ['queued', 'checking', 'uploading'].includes(j.status)).forEach((j) => pauseJob(j));
+  await api('POST', 'disconnect').catch(() => {});
+  S.path = null; S.entries = [];
+  showConnect();
+}
+async function quitApp() {
+  if (activeUploads().length && !(await confirmDlg('Quit Dropfin?', 'Uploads in progress will stop. Dropping the same files again later resumes them.', 'Quit', true))) return;
+  await api('POST', 'quit').catch(() => {});
+  document.body.innerHTML = '<div class="connect"><div class="cc" style="text-align:center"><img src="/icon.svg" width="56" height="56" alt="" style="margin:0 auto 12px;display:block"><h3 style="margin:0 0 6px">Dropfin has quit</h3><p class="hint" style="margin:0">You can close this tab. Open the Dropfin app to start again.</p></div></div>';
+}
+
+async function serverSettings() {
+  const s = S.server;
+  const r = await modal({ title: 'Server Settings', wide: true,
+    html: `
+      <label class="lbl">Name</label><input class="field" name="name" value="${esc(s.name || '')}">
+      <div class="sb-section" style="padding:6px 0 8px;font-size:12px">Jellyfin (optional)</div>
+      <p class="hint" style="margin:-4px 0 12px">Lets Dropfin list your libraries in the sidebar and start a library scan after uploads. Create a key in Jellyfin → Dashboard → API Keys.</p>
+      <label class="lbl">Jellyfin address</label>
+      <div style="display:flex;gap:8px"><input class="field" name="jfurl" placeholder="http://${esc(s.host)}:8096" value="${esc(s.jellyfinUrl || '')}" spellcheck="false" autocapitalize="off"><button type="button" class="btn" id="jf-find" style="height:34px">Find</button></div>
+      <label class="lbl">API key</label><input class="field" name="jfkey" type="password" placeholder="Paste API key" value="${s.hasJellyfinKey ? '********' : ''}" spellcheck="false" autocomplete="off">
+      <div style="display:flex;align-items:center;gap:10px;margin:-4px 0 16px"><button type="button" class="btn" id="jf-test">Test</button><span class="hint" id="jf-res"></span></div>
+      <label class="check" style="margin-bottom:16px"><input type="checkbox" name="auto" ${s.autoScan !== false ? 'checked' : ''}> Scan library automatically when uploads finish</label>`,
+    buttons: [{ label: 'Cancel', value: null }, { label: 'Save', value: true, primary: true }],
+    onOpen: (f) => {
+      if (!f.jfurl.value) f.jfurl.value = `http://${s.host}:8096`;
+      $('#jf-find', f).onclick = async () => {
+        const res = $('#jf-res', f); res.textContent = 'Searching…';
+        try { const d = (await api('GET', 'discover')).servers; if (d.length) { f.jfurl.value = d[0].url; res.textContent = 'Found ' + d[0].name; } else res.textContent = 'Nothing found — type the address.'; } catch (e) { res.textContent = e.message; }
+      };
+      $('#jf-test', f).onclick = async () => {
+        const res = $('#jf-res', f); res.style.color = ''; res.textContent = 'Testing…';
+        try { const d = await api('POST', 'jellyfin/test', null, { url: f.jfurl.value, key: f.jfkey.value, id: s.id }); res.style.color = 'var(--ok)'; res.textContent = `✓ ${d.name} — ${plural(d.libraries.length, 'library').replace('librarys', 'libraries')}`; }
+        catch (e) { res.style.color = 'var(--danger)'; res.textContent = e.message; }
+      };
+    } });
+  if (!r) return;
+  const f = r.form;
+  try {
+    const keyChanged = f.jfkey.value !== '********';
+    const d = await api('POST', 'servers/save', null, { id: s.id, host: s.host, port: s.port, username: s.username, name: f.name.value,
+      jellyfinUrl: f.jfkey.value ? f.jfurl.value : null, jellyfinKey: keyChanged ? f.jfkey.value : '********', autoScan: f.auto.checked });
+    upsertServer(d.server); S.server = d.server;
+    $('#conn-name').textContent = S.server.name || S.server.host;
+    await loadSidebar();
+    toast('Settings saved');
+  } catch (e) { showError(e); }
+}
+
+/* ------------------------------------------------------------ navigation & listing */
+async function go(p, { push = true, select = null } = {}) {
+  if (push && S.path && S.path !== p) { S.back.push(S.path); S.fwd = []; }
+  const ok = await load(false, p, select);
+  if (!ok && push && S.back[S.back.length - 1] === S.path) S.back.pop();
+}
+async function load(keepSel, p = S.path, select = null) {
+  const my = ++S.loadSeq;
+  const changing = p !== S.path;
+  if (changing) { S.loading = true; setTimeout(() => { if (S.loading && my === S.loadSeq) { $('#file-body').innerHTML = '<div class="loading"><span class="spin"></span></div>'; } }, 180); }
+  try {
+    const d = await api('GET', 'list', { path: p });
+    if (my !== S.loadSeq) return false;
+    S.loading = false;
+    if (changing) { S.filter = ''; $('#search').value = ''; }
+    S.path = d.path; S.entries = d.entries; S.free = d.free; S.total = d.total;
+    const names = new Set(d.entries.map((e) => e.name));
+    if (!keepSel || changing) { S.sel = new Set(select && names.has(select) ? [select] : []); S.anchor = S.focus = select; }
+    else S.sel = new Set([...S.sel].filter((n) => names.has(n)));
+    render();
+    if (select) scrollToName(select);
+    return true;
+  } catch (e) {
+    S.loading = false;
+    if (my !== S.loadSeq) return false;
+    if (e.status === 404 && p !== S.home && S.path == null) return false;
+    if (e.status === 404 && S.path && p === S.path) { toast('This folder no longer exists', true); return go(parentOf(p), { push: false }); }
+    if (e.data && e.data.reason === 'disconnected') return false;
+    if (S.path) render();
+    showError(e);
+    return false;
+  }
+}
+const goUp = () => { if (S.path && S.path !== '/') go(parentOf(S.path), { select: baseOf(S.path) }); };
+function goBack() { const p = S.back.pop(); if (!p) return; S.fwd.push(S.path); load(false, p, null); }
+function goFwd() { const p = S.fwd.pop(); if (!p) return; S.back.push(S.path); load(false, p, null); }
+
+function visible() {
+  const f = S.filter.trim().toLowerCase();
+  const list = f ? S.entries.filter((e) => e.name.toLowerCase().includes(f)) : S.entries.slice();
+  const { key, dir } = S.sort;
+  const coll = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  list.sort((a, b) => {
+    if (a.dir !== b.dir) return a.dir ? -1 : 1;
+    let r = 0;
+    if (key === 'date') r = a.mtime - b.mtime;
+    else if (key === 'size') r = a.size - b.size;
+    else if (key === 'kind') r = coll.compare(kindLabel(a), kindLabel(b));
+    return (r || coll.compare(a.name, b.name)) * (key === 'name' ? dir : r ? dir : 1);
+  });
+  return list;
+}
+
+function libraryFor(p) { return (S.side.libraries || []).filter((l) => l.available && within(p, l.path)).sort((a, b) => b.path.length - a.path.length)[0]; }
+function currentLabel() {
+  if (!S.path) return '';
+  if (S.path === S.home) return 'Home';
+  const lib = (S.side.libraries || []).find((l) => l.path === S.path);
+  if (lib) return lib.name;
+  if (S.path === '/') return S.server.name || S.server.host;
+  return baseOf(S.path);
+}
+
+function render() {
+  renderToolbar(); renderSidebar(); renderFiles(); renderStatus();
+}
+function renderToolbar() {
+  $('#btn-back').disabled = !S.back.length;
+  $('#btn-fwd').disabled = !S.fwd.length;
+  $('#title').textContent = currentLabel();
+  document.title = currentLabel() + ' — Dropfin';
+  $('#seg-view').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.view === S.view));
+  $('#btn-download').disabled = !S.sel.size;
+}
+function renderFiles() {
+  const list = (S.vis = visible());
+  $('#files').className = 'files view-' + S.view;
+  const head = $('#list-head');
+  head.hidden = S.view !== 'list';
+  if (S.view === 'list') {
+    const col = (k, label, cls = '') => `<button data-sort="${k}" class="${cls} ${S.sort.key === k ? 'sorted' : ''}">${label}${S.sort.key === k ? (S.sort.dir > 0 ? I.chevU : I.chevD).replace(/15/g, '11') : ''}</button>`;
+    head.innerHTML = col('name', 'Name') + col('date', 'Date Modified', 'h-date') + col('size', 'Size', 'r') + col('kind', 'Kind', 'h-kind');
+  }
+  const body = $('#file-body');
+  if (!list.length) {
+    body.innerHTML = S.filter
+      ? `<div class="empty"><div>No items match “${esc(S.filter)}”.</div></div>`
+      : `<div class="empty"><div class="box">${I.upload.replace(/19/g, '30')}<b>This folder is empty</b><span>Drop movies here to upload them, or press Upload.</span></div></div>`;
+    return;
+  }
+  const cut = S.clip && S.clip.mode === 'cut' ? new Set(S.clip.paths) : null;
+  if (S.view === 'list') {
+    body.innerHTML = list.map((e, i) => `<div class="row${S.sel.has(e.name) ? ' sel' : ''}${cut && cut.has(pjoin(S.path, e.name)) ? ' cut' : ''}" data-i="${i}" draggable="true"><div class="c-name">${fileIcon(e, 18)}<span class="nm">${esc(e.name)}</span></div><div class="c-date">${fmtDate(e.mtime)}</div><div class="c-size">${e.dir ? '--' : fmtSize(e.size)}</div><div class="c-kind">${esc(kindLabel(e))}</div></div>`).join('');
+  } else {
+    body.innerHTML = '<div class="grid">' + list.map((e, i) => `<div class="tile${S.sel.has(e.name) ? ' sel' : ''}${cut && cut.has(pjoin(S.path, e.name)) ? ' cut' : ''}" data-i="${i}" draggable="true"><div class="ic">${fileIcon(e, 64)}</div><div class="nm">${esc(e.name)}</div>${e.dir ? '' : `<div class="sub">${fmtSize(e.size)}</div>`}</div>`).join('') + '</div>';
+  }
+}
+function paintSel() {
+  $('#file-body').querySelectorAll('[data-i]').forEach((el) => el.classList.toggle('sel', S.sel.has(S.vis[+el.dataset.i].name)));
+  renderStatus(); renderToolbar();
+}
+function renderStatus() {
+  const crumbs = [];
+  if (S.path) {
+    const parts = S.path.split('/').filter(Boolean);
+    crumbs.push({ p: '/', name: S.server.name || S.server.host, icon: I.drive });
+    let cur = '';
+    for (const part of parts) { cur += '/' + part; crumbs.push({ p: cur, name: cur === S.home ? 'Home' : part, icon: cur === S.home ? I.home : null }); }
+  }
+  const show = crumbs.length > 6 ? [crumbs[0], { ellipsis: true }, ...crumbs.slice(-4)] : crumbs;
+  $('#pathbar').innerHTML = show.map((c, i) => (i ? `<span class="chev">${I.chevR}</span>` : '') +
+    (c.ellipsis ? '<span class="chev">…</span>' : `<button class="crumb" data-path="${esc(c.p)}">${c.icon ? c.icon.replace(/17/g, '13') : folderSVG(14)}<span>${esc(c.name)}</span></button>`)).join('');
+  const n = S.vis.length, s = S.sel.size;
+  let txt = plural(n, 'item');
+  if (s) { const bytes = S.vis.filter((e) => S.sel.has(e.name) && !e.dir).reduce((a, e) => a + e.size, 0); txt = `${s} of ${n} selected${bytes ? ', ' + fmtSize(bytes) : ''}`; }
+  if (S.free != null) txt += ` · ${fmtSize(S.free)} available`;
+  $('#status-right').textContent = txt;
+}
+$('#pathbar').addEventListener('click', (e) => { const c = e.target.closest('.crumb'); if (c) go(c.dataset.path); });
+$('#list-head').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-sort]'); if (!b) return;
+  const k = b.dataset.sort;
+  S.sort = S.sort.key === k ? { key: k, dir: -S.sort.dir } : { key: k, dir: k === 'name' || k === 'kind' ? 1 : -1 };
+  LS.set('sort', S.sort); renderFiles();
+});
+function setView(v) { S.view = v; LS.set('view', v); renderFiles(); renderToolbar(); }
+$('#seg-view').addEventListener('click', (e) => { const b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view); });
+$('#search').addEventListener('input', (e) => { S.filter = e.target.value; renderFiles(); renderStatus(); });
+$('#search').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.target.value = ''; S.filter = ''; renderFiles(); renderStatus(); $('#files').focus(); } if (e.key === 'ArrowDown' || e.key === 'Enter') { e.preventDefault(); $('#files').focus(); if (!S.sel.size) moveSel(1); } });
+
+/* ------------------------------------------------------------ selection & mouse */
+const selected = () => S.vis.filter((e) => S.sel.has(e.name));
+function selectOnly(name) { S.sel = new Set(name ? [name] : []); S.anchor = S.focus = name; }
+function scrollToName(name) {
+  const i = S.vis.findIndex((e) => e.name === name);
+  const el = $('#file-body').querySelector(`[data-i="${i}"]`);
+  if (el) el.scrollIntoView({ block: 'nearest' });
+}
+const body = $('#file-body');
+const itemAt = (t) => { const el = t.closest('[data-i]'); return el ? S.vis[+el.dataset.i] : null; };
+let pendingSingle = null;
+$('#files').addEventListener('mousedown', (e) => {
+  if (e.target.closest('.list-head')) return;
+  const it = itemAt(e.target);
+  if (e.button === 2) { if (it && !S.sel.has(it.name)) { selectOnly(it.name); paintSel(); } else if (!it) { selectOnly(null); paintSel(); } return; }
+  if (e.button !== 0 || (IS_MAC && e.ctrlKey)) return;
+  if (!it) { if (!e.metaKey && !e.shiftKey) { selectOnly(null); paintSel(); } return; }
+  const toggle = IS_MAC ? e.metaKey : e.ctrlKey;
+  if (toggle) { S.sel.has(it.name) ? S.sel.delete(it.name) : S.sel.add(it.name); S.anchor = S.focus = it.name; }
+  else if (e.shiftKey && S.anchor) {
+    const a = S.vis.findIndex((x) => x.name === S.anchor), b = S.vis.indexOf(it);
+    S.sel = new Set(S.vis.slice(Math.min(a, b), Math.max(a, b) + 1).map((x) => x.name)); S.focus = it.name;
+  } else if (!S.sel.has(it.name)) selectOnly(it.name);
+  else pendingSingle = it.name;
+  paintSel();
+});
+$('#files').addEventListener('click', (e) => {
+  const it = itemAt(e.target);
+  if (it && pendingSingle === it.name && !e.metaKey && !e.shiftKey && !e.ctrlKey) { selectOnly(it.name); paintSel(); }
+  pendingSingle = null;
+});
+body.addEventListener('dblclick', (e) => { const it = itemAt(e.target); if (it) openItem(it); });
+$('#files').addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  const it = itemAt(e.target);
+  if (IS_MAC && e.ctrlKey && it && !S.sel.has(it.name)) { selectOnly(it.name); paintSel(); }
+  if (it) itemMenu(e.clientX, e.clientY); else bgMenu(e.clientX, e.clientY);
+});
+
+function openItem(e) { if (e.dir) go(pjoin(S.path, e.name)); else quickLook(e); }
+
+function itemMenu(x, y) {
+  const sel = selected(); if (!sel.length) return;
+  const one = sel.length === 1 ? sel[0] : null;
+  const count = sel.length > 1 ? ` ${sel.length} Items` : '';
+  showMenu([
+    one && one.dir ? { label: 'Open', kbd: '⌘↓', action: () => openItem(one) } : null,
+    one && !one.dir ? { label: 'Quick Look', kbd: 'Space', action: () => quickLook(one) } : null,
+    { label: `Download${count} to Mac`, action: downloadSel },
+    '-',
+    one ? { label: 'Rename…', kbd: '↩', action: () => renameItem(one) } : null,
+    one ? { label: 'Get Info', kbd: '⌘I', action: () => getInfo(one) } : null,
+    one && one.dir ? { label: 'Add to Sidebar', action: () => pin(pjoin(S.path, one.name), one.name) } : null,
+    { label: 'Copy Path', action: () => copyText(sel.map((e) => pjoin(S.path, e.name)).join('\n')) },
+    '-',
+    { label: `Copy${count}`, kbd: '⌘C', action: () => setClip('copy') },
+    { label: `Cut${count}`, kbd: '⌘X', action: () => setClip('cut') },
+    S.clip ? { label: pasteLabel(), kbd: '⌘V', action: paste } : null,
+    '-',
+    { label: `Delete${count}…`, kbd: '⌘⌫', danger: true, action: deleteSel },
+  ], x, y);
+}
+function bgMenu(x, y) {
+  showMenu([
+    { label: 'New Folder', kbd: '⇧⌘N', action: newFolder },
+    { label: 'Upload Files…', action: () => $('#pick-files').click() },
+    { label: 'Upload Folder…', action: () => $('#pick-folder').click() },
+    S.clip ? '-' : null,
+    S.clip ? { label: pasteLabel(), kbd: '⌘V', action: paste } : null,
+    '-',
+    { label: 'Go to Folder…', kbd: '⇧⌘G', action: goToFolder },
+    S.path !== S.home && S.path !== '/' ? { label: 'Add This Folder to Sidebar', action: () => pin(S.path, baseOf(S.path)) } : null,
+    { label: S.view === 'list' ? 'View as Icons' : 'View as List', action: () => setView(S.view === 'list' ? 'grid' : 'list') },
+    { label: 'Refresh', kbd: '⌘R', action: () => load(true) },
+    S.side.jellyfin ? '-' : null,
+    S.side.jellyfin ? { label: 'Scan Jellyfin Library', action: scan } : null,
+  ], x, y);
+}
+const pasteLabel = () => { const n = S.clip.paths.length; return `${S.clip.mode === 'cut' ? 'Move' : 'Paste'} ${n === 1 ? 'Item' : n + ' Items'} Here`; };
+
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); toast('Copied'); }
+  catch { await modal({ title: 'Path', html: `<div class="mono">${esc(t)}</div>`, buttons: [{ label: 'OK', value: true, primary: true }] }); }
+}
+
+/* ------------------------------------------------------------ actions */
+async function newFolder() {
+  const lib = libraryFor(S.path);
+  const atLibRoot = lib && lib.path === S.path;
+  const ph = atLibRoot && lib.type === 'movies' ? 'e.g. Dune (2021)' : atLibRoot && lib.type === 'tvshows' ? 'e.g. Severance (2022)' : 'untitled folder';
+  const r = await modal({ title: 'New Folder', message: atLibRoot && (lib.type === 'movies' || lib.type === 'tvshows') ? 'Jellyfin matches best with “Title (Year)”.' : '', input: true, inputValue: atLibRoot ? '' : 'untitled folder', placeholder: ph,
+    buttons: [{ label: 'Cancel', value: null }, { label: 'Create', value: true, primary: true }] });
+  if (!r || !r.input.trim()) return;
+  try { const d = await api('POST', 'mkdir', null, { path: S.path, name: r.input.trim() }); await load(true, S.path, d.name); }
+  catch (e) { showError(e); }
+}
+async function renameItem(e) {
+  const r = await modal({ title: 'Rename', input: true, inputValue: e.name, selectStem: !e.dir, buttons: [{ label: 'Cancel', value: null }, { label: 'Rename', value: true, primary: true }] });
+  if (!r || !r.input.trim() || r.input.trim() === e.name) return;
+  try { const d = await api('POST', 'rename', null, { path: pjoin(S.path, e.name), name: r.input.trim() }); await load(true, S.path, d.name); }
+  catch (ex) { showError(ex); }
+}
+async function deleteSel() {
+  const sel = selected(); if (!sel.length) return;
+  const what = sel.length === 1 ? `“${sel[0].name}”` : plural(sel.length, 'item');
+  const r = await confirmDlg(`Delete ${what}?`, `This permanently deletes ${sel.length === 1 ? 'it' : 'them'} from ${S.server.name || S.server.host}. This can't be undone.`, 'Delete', true);
+  if (!r) return;
+  try { await api('POST', 'delete', null, { paths: sel.map((e) => pjoin(S.path, e.name)) }); toast(`Deleted ${what}`); await load(true); }
+  catch (e) { showError(e); load(true); }
+}
+function setClip(mode) {
+  const sel = selected(); if (!sel.length) return;
+  S.clip = { mode, paths: sel.map((e) => pjoin(S.path, e.name)) };
+  renderFiles();
+  toast(`${mode === 'cut' ? 'Cut' : 'Copied'} ${sel.length === 1 ? '“' + sel[0].name + '”' : plural(sel.length, 'item')} — open a folder and press ⌘V`);
+}
+async function paste() { if (!S.clip) return; const c = S.clip; await transfer(c.mode === 'cut' ? 'move' : 'copy', c.paths, S.path); if (c.mode === 'cut') S.clip = null; renderFiles(); }
+async function transfer(mode, paths, dest) {
+  const t = setTimeout(() => toast(mode === 'move' ? 'Moving…' : 'Copying on the server…'), 400);
+  try {
+    const r = await api('POST', 'transfer', null, { mode, paths, dest });
+    clearTimeout(t);
+    if (r.conflicts.length) await modal({ title: `${plural(r.conflicts.length, 'item')} skipped`, message: `The destination already has items named: ${r.conflicts.join(', ')}. Rename one and try again.`, buttons: [{ label: 'OK', value: true, primary: true }] });
+    if (r.errors.length) toast(r.errors[0], true);
+    else if (r.done.length) toast(`${mode === 'move' ? 'Moved' : 'Copied'} ${r.done.length === 1 ? '“' + r.done[0] + '”' : plural(r.done.length, 'item')}`);
+  } catch (e) { clearTimeout(t); showError(e); }
+  await load(true);
+}
+async function pin(p, name, remove) {
+  try { const d = await api('POST', 'pin', null, { path: p, name, remove }); S.side.pins = d.pins; renderSidebar(); if (!remove) toast(`Added “${name}” to the sidebar`); }
+  catch (e) { showError(e); }
+}
+async function scan() {
+  try { await api('POST', 'scan'); toast('Jellyfin is scanning your libraries'); } catch (e) { showError(e); }
+}
+async function goToFolder() {
+  const r = await modal({ title: 'Go to Folder', input: true, inputValue: S.path, placeholder: '/srv/media/Movies', buttons: [{ label: 'Cancel', value: null }, { label: 'Go', value: true, primary: true }] });
+  if (!r) return;
+  let p = r.input.trim(); if (!p) return;
+  if (p === '~') p = S.home; else if (p.startsWith('~/')) p = pjoin(S.home, p.slice(2));
+  else if (!p.startsWith('/')) p = pjoin(S.path, p);
+  p = p.replace(/\/+$/, '') || '/';
+  go(p);
+}
+async function getInfo(e) {
+  const p = pjoin(S.path, e.name);
+  const scrimP = modal({ title: e.name, icon: fileIcon(e, 48), wide: true,
+    html: `<dl class="kv"><dt>Kind</dt><dd>${esc(kindLabel(e))}</dd><dt>Size</dt><dd id="gi-size">${e.dir ? 'Calculating…' : fmtSize(e.size) + ` (${e.size.toLocaleString()} bytes)`}</dd><dt>Where</dt><dd>${esc(S.path)}</dd><dt>Modified</dt><dd>${fmtDate(e.mtime)}</dd><dt>Permissions</dt><dd id="gi-mode">…</dd></dl>`,
+    buttons: [{ label: 'Copy Path', value: 'copy', left: true }, { label: 'Done', value: true, primary: true }] });
+  api('GET', 'info', { path: p }).then((d) => {
+    const sz = $('#gi-size'); if (!sz) return;
+    if (e.dir) sz.textContent = `${fmtSize(d.size)} for ${plural(d.files, 'file')}${d.partial ? ' (so far — large folder)' : ''}`;
+    $('#gi-mode').textContent = `${d.mode} · uid ${d.uid}, gid ${d.gid}`;
+  }).catch(() => {});
+  const r = await scrimP;
+  if (r && r.value === 'copy') copyText(p);
+}
+async function downloadSel() {
+  const sel = selected(); if (!sel.length) return;
+  try {
+    const d = await api('POST', 'download', null, { paths: sel.map((e) => pjoin(S.path, e.name)) });
+    upsertJob(d.job); pollJobs(); renderTransfers();
+  } catch (e) { showError(e); }
+}
+
+/* ------------------------------------------------------------ quick look */
+const streamUrl = (p) => '/api/stream?' + qs({ path: p, t: TOKEN });
+async function quickLook(e) {
+  if (e.dir) return openItem(e);
+  const p = pjoin(S.path, e.name), k = kindOf(e), x = extOf(e.name);
+  let view;
+  if (k === 'image' && x !== 'heic' && x !== 'tif' && x !== 'tiff') view = `<img src="${streamUrl(p)}" alt="">`;
+  else if (k === 'video' && ['mp4', 'm4v', 'mov', 'webm', 'mkv'].includes(x)) view = `<video src="${streamUrl(p)}" controls playsinline preload="metadata"></video>`;
+  else if (k === 'audio') view = `<audio src="${streamUrl(p)}" controls></audio>`;
+  else if (k === 'text' || k === 'subtitle' && x !== 'sup' && x !== 'idx' && x !== 'sub') view = '<pre id="ql-pre">Loading…</pre>';
+  else view = `<div class="nope">${fileIcon(e, 96)}<div>No preview for this kind of file.</div></div>`;
+  const nope = `<div class="nope">${fileIcon(e, 96)}<div>Your browser can't play this file. Download it to watch, or play it in Jellyfin.</div></div>`;
+  const r = await modal({ wide: true,
+    html: `<div class="ql-view" id="ql-view">${view}</div><div class="ql-foot"><div class="info"><b>${esc(e.name)}</b><small>${esc(kindLabel(e))} · ${fmtSize(e.size)} · ${fmtDate(e.mtime)}</small></div></div>`,
+    buttons: [{ label: 'Download to Mac', value: 'dl' }, { label: 'Close', value: true, primary: true }],
+    onOpen: (f, finish) => {
+      f.classList.add('ql');
+      const foot = f.querySelector('.ql-foot'); foot.appendChild(f.querySelector('.dlg-btns')); f.querySelector('.dlg-btns').style.margin = '0';
+      const media = f.querySelector('video,audio,img');
+      if (media) media.addEventListener('error', () => { const v = f.querySelector('#ql-view'); if (v) v.innerHTML = nope; });
+      const pre = f.querySelector('#ql-pre');
+      if (pre) fetch(streamUrl(p), { headers: { Range: 'bytes=0-131071' } }).then((r) => r.text()).then((t) => { pre.textContent = t + (e.size > 131072 ? '\n\n…' : ''); }).catch(() => { pre.textContent = 'Preview failed.'; });
+      f.addEventListener('keydown', (ev) => { if (ev.key === ' ' && ev.target.tagName !== 'VIDEO' && ev.target.tagName !== 'AUDIO') { ev.preventDefault(); finish(true); } });
+    } });
+  if (r && r.value === 'dl') downloadSel();
+  $('#files').focus();
+}
+
+/* ------------------------------------------------------------ keyboard */
+let typeBuf = '', typeTimer;
+function moveSel(delta, extend) {
+  const v = S.vis; if (!v.length) return;
+  let idx = v.findIndex((e) => e.name === S.focus);
+  if (idx < 0) idx = delta > 0 ? -1 : v.length;
+  const n = Math.max(0, Math.min(v.length - 1, idx + delta));
+  if (extend && S.anchor) {
+    const a = v.findIndex((e) => e.name === S.anchor);
+    S.sel = new Set(v.slice(Math.min(a, n), Math.max(a, n) + 1).map((e) => e.name)); S.focus = v[n].name;
+  } else selectOnly(v[n].name);
+  paintSel(); scrollToName(v[n].name);
+}
+const gridCols = () => { const g = $('#file-body .grid'); return g ? getComputedStyle(g).gridTemplateColumns.split(' ').length : 1; };
+
+document.addEventListener('keydown', (e) => {
+  if (modalOpen || $('#app').hidden) return;
+  const tag = e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (!menuEl.hidden) { if (e.key === 'Escape') hideMenu(); return; }
+  const mod = IS_MAC ? e.metaKey : e.ctrlKey;
+  const k = e.key;
+  const act = (fn) => { e.preventDefault(); window.__dfKeyAt = performance.now(); fn(); };
+  if (mod && e.shiftKey && k.toLowerCase() === 'n') return act(newFolder);
+  if (mod && e.shiftKey && k.toLowerCase() === 'g') return act(goToFolder);
+  if (mod && e.altKey && k.toLowerCase() === 'n') return act(newFolder);
+  if (mod && k === 'a') return act(() => { S.sel = new Set(S.vis.map((x) => x.name)); paintSel(); });
+  if (mod && k === 'f') return act(() => $('#search').focus());
+  if (mod && k === 'r') return act(() => { loadSidebar(); load(true); });
+  if (mod && k === '1') return act(() => setView('grid'));
+  if (mod && k === '2') return act(() => setView('list'));
+  if (mod && k === 'd') return act(downloadSel);
+  if (mod && k === 'i') return act(() => { const s = selected(); if (s.length === 1) getInfo(s[0]); });
+  if (mod && k === 'c') return act(() => setClip('copy'));
+  if (mod && k === 'x') return act(() => setClip('cut'));
+  if (mod && k === 'v') return act(paste);
+  if (mod && (k === '[' )) return act(goBack);
+  if (mod && (k === ']')) return act(goFwd);
+  if (mod && k === 'ArrowUp') return act(goUp);
+  if ((mod && k === 'ArrowDown') || (mod && k === 'o')) return act(() => { const s = selected(); if (s.length === 1) openItem(s[0]); });
+  if ((mod && k === 'Backspace') || k === 'Delete') return act(deleteSel);
+  if (k === 'Enter') return act(() => { const s = selected(); if (s.length === 1) renameItem(s[0]); });
+  if (k === ' ') return act(() => { const s = selected(); if (s.length === 1) quickLook(s[0]); });
+  if (k === 'Escape') return act(() => { selectOnly(null); paintSel(); });
+  if (k === 'ArrowDown') return act(() => moveSel(S.view === 'grid' ? gridCols() : 1, e.shiftKey));
+  if (k === 'ArrowUp') return act(() => moveSel(S.view === 'grid' ? -gridCols() : -1, e.shiftKey));
+  if (k === 'ArrowRight' && S.view === 'grid') return act(() => moveSel(1, e.shiftKey));
+  if (k === 'ArrowLeft' && S.view === 'grid') return act(() => moveSel(-1, e.shiftKey));
+  if (k === 'Backspace' && !mod) return act(goUp);
+  if (k.length === 1 && !mod && !e.altKey && /\S/.test(k)) {
+    typeBuf += k.toLowerCase(); clearTimeout(typeTimer); typeTimer = setTimeout(() => { typeBuf = ''; }, 900);
+    const hit = S.vis.find((x) => x.name.toLowerCase().startsWith(typeBuf));
+    if (hit) { selectOnly(hit.name); paintSel(); scrollToName(hit.name); }
+  }
+});
+
+/* ------------------------------------------------------------ toolbar wiring */
+$('#btn-back').innerHTML = I.back; $('#btn-fwd').innerHTML = I.fwd;
+$('#btn-back').onclick = goBack; $('#btn-fwd').onclick = goFwd;
+$('#btn-sidebar').innerHTML = I.sidebar; $('#btn-sidebar').onclick = () => $('#app').classList.toggle('sb-open');
+$('#seg-view').children[0].innerHTML = I.grid; $('#seg-view').children[1].innerHTML = I.list;
+$('#btn-newfolder').innerHTML = I.newFolder; $('#btn-newfolder').onclick = newFolder;
+$('#btn-upload').innerHTML = I.upload;
+$('#btn-upload').onclick = (e) => showMenu([
+  { label: 'Upload Files…', action: () => $('#pick-files').click() },
+  { label: 'Upload a Folder…', action: () => $('#pick-folder').click() },
+], 0, 0, e.currentTarget);
+$('#btn-download').innerHTML = I.download; $('#btn-download').onclick = downloadSel;
+$('#btn-scan').innerHTML = I.scan; $('#btn-scan').onclick = scan;
+$('#search-ic').innerHTML = I.search;
+$('#title').onclick = goToFolder;
+
+/* ------------------------------------------------------------ drag & drop */
+const hasType = (e, t) => [...((e.dataTransfer && e.dataTransfer.types) || [])].includes(t);
+const isExternal = (e) => hasType(e, 'Files') && !hasType(e, 'application/x-dropfin');
+const isInternal = (e) => hasType(e, 'application/x-dropfin');
+let dragPaths = null;
+let lastTarget = null;
+
+body.addEventListener('dragstart', (e) => {
+  const it = itemAt(e.target); if (!it) return;
+  if (!S.sel.has(it.name)) { selectOnly(it.name); paintSel(); }
+  dragPaths = selected().map((x) => pjoin(S.path, x.name));
+  e.dataTransfer.setData('application/x-dropfin', JSON.stringify(dragPaths));
+  e.dataTransfer.setData('text/plain', dragPaths.join('\n'));
+  e.dataTransfer.effectAllowed = 'copyMove';
+});
+body.addEventListener('dragend', () => { dragPaths = null; clearDrop(); });
+
+function dropTargetAt(e, internal) {
+  if ($('#app').hidden) return null;
+  const t = e.target;
+  const row = t.closest && t.closest('#file-body [data-i]');
+  if (row) {
+    const it = S.vis[+row.dataset.i];
+    if (it && it.dir) {
+      const p = pjoin(S.path, it.name);
+      if (!(internal && dragPaths && dragPaths.includes(p))) return { path: p, label: it.name, el: row };
+    }
+  }
+  const sb = t.closest && (t.closest('.sb-item') || t.closest('.crumb'));
+  if (sb && !sb.classList.contains('missing')) return { path: sb.dataset.path, label: sb.textContent.trim(), el: sb };
+  if (t.closest && t.closest('#files-wrap') && S.path) return { path: S.path, label: currentLabel(), el: null };
+  return null;
+}
+function clearDrop() {
+  document.querySelectorAll('.drop-target').forEach((x) => x.classList.remove('drop-target'));
+  $('#files-wrap').classList.remove('drop-here'); $('#drop-label').hidden = true; lastTarget = null;
+}
+function showDrop(t, external, copy) {
+  if (lastTarget && t && lastTarget.el === t.el && lastTarget.path === t.path) return;
+  clearDrop(); lastTarget = t;
+  if (!t) return;
+  if (t.el) t.el.classList.add('drop-target');
+  else if (external) $('#files-wrap').classList.add('drop-here');
+  const lbl = $('#drop-label');
+  lbl.textContent = external ? `Upload to “${t.label}”` : `${copy ? 'Copy' : 'Move'} to “${t.label}”`;
+  lbl.hidden = !(external || t.el);
+}
+document.addEventListener('dragover', (e) => {
+  const ext = isExternal(e), int = isInternal(e);
+  if (!ext && !int) return;
+  e.preventDefault();
+  const t = dropTargetAt(e, int);
+  if (int && t && !t.el) { e.dataTransfer.dropEffect = 'none'; showDrop(null); return; }
+  e.dataTransfer.dropEffect = t ? (int ? (e.altKey ? 'copy' : 'move') : 'copy') : 'none';
+  showDrop(t, ext, e.altKey);
+});
+document.addEventListener('dragleave', (e) => { if (!e.relatedTarget || e.relatedTarget === document.documentElement) clearDrop(); });
+document.addEventListener('drop', async (e) => {
+  const ext = isExternal(e), int = isInternal(e);
+  if (!ext && !int && !hasType(e, 'Files')) return;
+  e.preventDefault();
+  const t = dropTargetAt(e, int);
+  clearDrop();
+  if (!t) return;
+  if (int) {
+    let paths = dragPaths;
+    try { paths = JSON.parse(e.dataTransfer.getData('application/x-dropfin')); } catch {}
+    if (!paths || !paths.length || !t.el) return;
+    return transfer(e.altKey ? 'copy' : 'move', paths, t.path);
+  }
+  const entries = [...e.dataTransfer.items].filter((i) => i.kind === 'file').map((i) => (i.webkitGetAsEntry ? i.webkitGetAsEntry() : null));
+  const files = [...e.dataTransfer.files];
+  const { list, dirs } = await collectDropped(entries, files);
+  startUploads(list, dirs, t.path);
+});
+
+async function collectDropped(entries, files) {
+  if (!entries.length || entries.some((x) => !x)) return { list: files.map((f) => ({ file: f, rel: f.name })), dirs: [] };
+  const list = [], dirs = [];
+  async function walk(entry, prefix) {
+    if (entry.isFile) {
+      const f = await new Promise((res, rej) => entry.file(res, rej));
+      list.push({ file: f, rel: prefix + entry.name });
+    } else if (entry.isDirectory) {
+      dirs.push(prefix + entry.name);
+      const reader = entry.createReader();
+      for (;;) {
+        const batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+        if (!batch.length) break;
+        for (const x of batch) await walk(x, prefix + entry.name + '/');
+      }
+    }
+  }
+  for (const en of entries) await walk(en, '');
+  return { list, dirs };
+}
+$('#pick-files').onchange = (e) => { const fs = [...e.target.files]; e.target.value = ''; startUploads(fs.map((f) => ({ file: f, rel: f.name })), [], S.path); };
+$('#pick-folder').onchange = (e) => {
+  const fs = [...e.target.files]; e.target.value = '';
+  const dirs = new Set();
+  const list = fs.map((f) => { const rel = f.webkitRelativePath || f.name; const parts = rel.split('/'); for (let i = 1; i < parts.length; i++) dirs.add(parts.slice(0, i).join('/')); return { file: f, rel }; });
+  startUploads(list, [...dirs], S.path);
+};
+
+/* ------------------------------------------------------------ uploads */
+const CHUNK = 64 * 1024 * 1024;
+const MAX_PARALLEL = 2;
+const uploads = [];
+const downloads = new Map();
+let upSeq = 0, active = 0, completedSinceScan = 0;
+const activeUploads = () => uploads.filter((j) => ['queued', 'checking', 'uploading'].includes(j.status));
+const hidden = (rel) => rel.split('/').some((p) => p.startsWith('.') || p === 'Thumbs.db' || p === 'desktop.ini');
+
+async function startUploads(list, dirs, dest) {
+  list = list.filter((x) => !hidden(x.rel));
+  dirs = dirs.filter((d) => !hidden(d));
+  if (!list.length && !dirs.length) return;
+  // Create folders first so empty folders come across too.
+  const leaf = dirs.filter((d) => !dirs.some((o) => o.startsWith(d + '/')));
+  for (const d of leaf) { try { await api('POST', 'mkdir', null, { path: dest, name: d, parents: true }); } catch (e) { showError(e); return; } }
+  if (dirs.length && dest === S.path) load(true);
+  const batch = { choice: null };
+  for (const { file, rel } of list) uploads.push({ id: 'u' + ++upSeq, kind: 'upload', file, dir: dest, name: rel, size: file.size, loaded: 0, status: 'queued', batch, samples: [] });
+  $('#transfers').hidden = false;
+  trCollapsed = list.length > 1 ? trCollapsed : false;
+  renderTransfers(); pump();
+}
+function pump() {
+  while (active < MAX_PARALLEL) {
+    const j = uploads.find((u) => u.status === 'queued');
+    if (!j) break;
+    active++;
+    runUpload(j).catch((e) => { if (j.status !== 'paused' && j.status !== 'cancelled') { j.status = 'error'; j.error = e.message || String(e); } })
+      .finally(() => { active--; j.xhr = null; renderTransfers(); pump(); maybeFinished(); });
+  }
+}
+
+let dialogChain = Promise.resolve();
+function serial(fn) { const p = dialogChain.then(fn); dialogChain = p.catch(() => {}); return p; }
+function askConflict(j, suggest) {
+  return serial(async () => {
+    if (j.batch.choice) return j.batch.choice;
+    const more = activeUploads().filter((u) => u.batch === j.batch && u !== j).length;
+    const r = await modal({ title: `“${baseOf('/' + j.name)}” already exists`, message: `An item with this name is already in “${baseOf(pjoin(j.dir, j.name).replace(/\/[^/]*$/, '')) || '/'}”. Do you want to replace it?`,
+      check: more ? `Do this for the other ${plural(more, 'item')}` : null,
+      buttons: [{ label: 'Skip', value: 'skip', left: true }, { label: 'Keep Both', value: 'keep' }, { label: 'Replace', value: 'replace', primary: true }] });
+    const v = r ? r.value : 'skip';
+    if (r && r.checked) j.batch.choice = v;
+    return v;
+  });
+}
+
+async function uploadStatus(j) { return api('GET', 'upload/status', { dir: j.dir, name: j.name, size: j.size }); }
+
+async function runUpload(j) {
+  j.status = 'checking'; renderJob(j);
+  let st = await uploadStatus(j);
+  if (st.exists && !j.replace) {
+    const choice = await askConflict(j, st.suggest);
+    if (j.status !== 'checking') return;
+    if (choice === 'skip') { j.status = 'skipped'; return; }
+    if (choice === 'keep') {
+      const parts = j.name.split('/'); parts[parts.length - 1] = st.suggest; j.name = parts.join('/');
+      st = await uploadStatus(j);
+    }
+    if (choice === 'replace') j.replace = true;
+  }
+  j.offset = st.offset || 0; j.loaded = j.offset; j.resumed = j.offset > 0;
+  j.status = 'uploading'; j.retries = 0; renderJob(j);
+  for (;;) {
+    const end = Math.min(j.offset + CHUNK, j.size);
+    try {
+      const r = await putChunk(j, j.offset, end);
+      j.retries = 0;
+      if (r && r.done) break;
+      j.offset = r.offset;
+    } catch (e) {
+      if (j.status === 'paused' || j.status === 'cancelled') return;
+      if (e.status === 409 && e.data && e.data.reason === 'exists') { j.status = 'error'; j.error = e.message; return; }
+      if (e.status && e.status !== 409 && e.status < 500 && e.status !== 401) { j.status = 'error'; j.error = e.message; return; }
+      if (++j.retries > 8) { j.status = 'error'; j.error = e.message || 'Upload failed'; return; }
+      j.note = 'Reconnecting…'; renderJob(j);
+      await sleep(Math.min(15000, 700 * 2 ** j.retries));
+      if (j.status !== 'uploading') return;
+      try { const s2 = await uploadStatus(j); j.offset = s2.offset; j.loaded = s2.offset; } catch {}
+      j.note = null;
+    }
+  }
+  j.status = 'done'; j.loaded = j.size; j.finished = Date.now();
+  completedSinceScan++;
+  if (within(j.dir, S.path) || within(S.path, j.dir)) refreshSoon();
+}
+function putChunk(j, start, end) {
+  return new Promise((resolve, reject) => {
+    const x = new XMLHttpRequest();
+    j.xhr = x;
+    x.open('PUT', '/api/upload?' + qs({ dir: j.dir, name: j.name, offset: start, total: j.size, replace: j.replace ? 1 : 0 }));
+    x.setRequestHeader('X-Dropfin-Token', TOKEN);
+    x.setRequestHeader('Content-Type', 'application/octet-stream');
+    x.upload.onprogress = (ev) => { j.loaded = start + ev.loaded; tick(j); };
+    x.onload = () => {
+      let d = null; try { d = JSON.parse(x.responseText); } catch {}
+      if (x.status >= 200 && x.status < 300) resolve(d);
+      else reject(new HttpError((d && d.error) || 'Upload failed', x.status, d));
+    };
+    x.onerror = () => reject(new HttpError('Connection to Dropfin lost', 0));
+    x.onabort = () => reject(new HttpError('Stopped', -1));
+    x.send(j.file.slice(start, end));
+  });
+}
+function pauseJob(j) { if (j.kind !== 'upload') return; j.status = 'paused'; if (j.xhr) j.xhr.abort(); renderTransfers(); }
+function resumeJob(j) { j.status = 'queued'; j.error = null; j.samples = []; renderTransfers(); pump(); }
+async function cancelJob(j) {
+  if (j.kind === 'download') { await api('POST', 'jobs/cancel', null, { id: j.sid }).catch(() => {}); return; }
+  const was = j.status; j.status = 'cancelled'; if (j.xhr) j.xhr.abort();
+  if (was !== 'done' && was !== 'skipped') api('POST', 'upload/cancel', null, { dir: j.dir, name: j.name }).catch(() => {});
+  renderTransfers();
+}
+let refreshTimer;
+function refreshSoon() { clearTimeout(refreshTimer); refreshTimer = setTimeout(() => load(true), 400); }
+async function maybeFinished() {
+  if (activeUploads().length) return;
+  if (completedSinceScan && S.side.jellyfin && $('#tr-scan').checked) {
+    completedSinceScan = 0;
+    try { await api('POST', 'scan'); toast('Uploads finished — Jellyfin is scanning your library'); } catch (e) { showError(e); }
+  } else if (completedSinceScan) { completedSinceScan = 0; toast('Uploads finished'); }
+}
+$('#tr-scan').onchange = (e) => {
+  if (!S.server) return;
+  S.server.autoScan = e.target.checked;
+  api('POST', 'servers/save', null, { id: S.server.id, host: S.server.host, port: S.server.port, username: S.server.username, name: S.server.name, autoScan: e.target.checked }).catch(() => {});
+};
+window.addEventListener('beforeunload', (e) => { if (activeUploads().length) { e.preventDefault(); e.returnValue = ''; } });
+
+/* downloads are run by the helper; poll for progress */
+let polling = false;
+function upsertJob(sj) {
+  const j = downloads.get(sj.id) || { id: 'd' + sj.id, sid: sj.id, kind: 'download', samples: [] };
+  Object.assign(j, { name: sj.name, size: sj.total, loaded: sj.done, status: { preparing: 'checking', running: 'uploading' }[sj.status] || sj.status, error: sj.error, localPath: sj.localPath, speed: sj.speed });
+  downloads.set(sj.id, j);
+  $('#transfers').hidden = false;
+  return j;
+}
+async function pollJobs() {
+  if (polling) return; polling = true;
+  try {
+    for (;;) {
+      const d = await api('GET', 'jobs').catch(() => null);
+      if (!d) break;
+      let running = false;
+      for (const sj of d.jobs) { const before = downloads.get(sj.id); const was = before && before.status; const j = upsertJob(sj); if (was && was !== 'done' && j.status === 'done') toast(`Downloaded “${j.name}” to ${S.downloadsDir}`); if (sj.status === 'running' || sj.status === 'preparing') running = true; }
+      renderTransfers();
+      if (!running) break;
+      await sleep(600);
+    }
+  } finally { polling = false; }
+}
+
+/* ------------------------------------------------------------ transfers panel */
+let trCollapsed = LS.get('trCollapsed', false);
+let renderQueued = false;
+function tick(j) {
+  const now = performance.now();
+  j.samples.push([now, j.loaded]);
+  while (j.samples.length > 2 && now - j.samples[0][0] > 4000) j.samples.shift();
+  if (!renderQueued) { renderQueued = true; requestAnimationFrame(() => { renderQueued = false; renderTransfers(); }); }
+}
+function speedOf(j) {
+  if (j.kind === 'download') return j.speed || 0;
+  if (j.samples.length < 2) return 0;
+  const [t0, b0] = j.samples[0], [t1, b1] = j.samples[j.samples.length - 1];
+  return t1 - t0 > 250 ? ((b1 - b0) / (t1 - t0)) * 1000 : 0;
+}
+const allJobs = () => [...uploads, ...downloads.values()];
+function renderTransfers() {
+  const panel = $('#transfers');
+  const jobs = allJobs().filter((j) => j.status !== 'cancelled');
+  if (!jobs.length) { panel.hidden = true; return; }
+  if ($('#app').hidden) return;
+  panel.hidden = false;
+  const live = jobs.filter((j) => ['queued', 'checking', 'uploading'].includes(j.status));
+  const liveUp = live.filter((j) => j.kind === 'upload'), liveDown = live.filter((j) => j.kind === 'download');
+  const failed = jobs.filter((j) => j.status === 'error').length;
+  const total = live.reduce((a, j) => a + (j.size || 0), 0), done = live.reduce((a, j) => a + (j.loaded || 0), 0);
+  const speed = live.reduce((a, j) => a + speedOf(j), 0);
+  let title;
+  if (live.length) title = liveUp.length && liveDown.length ? `Transferring ${plural(live.length, 'item')}` : liveUp.length ? `Uploading ${plural(liveUp.length, 'item')}` : `Downloading ${plural(liveDown.length, 'item')}`;
+  else if (jobs.some((j) => j.status === 'paused')) title = 'Paused';
+  else title = failed ? `${plural(failed, 'transfer')} failed` : 'All done';
+  $('#tr-title').textContent = title;
+  $('#tr-sub').textContent = live.length ? [`${fmtSize(done)} of ${fmtSize(total)}`, fmtSpeed(speed), fmtEta((total - done) / speed)].filter(Boolean).join(' · ') : `${plural(jobs.filter((j) => j.status === 'done').length, 'item')} transferred`;
+  $('#tr-bar').style.width = (live.length ? (total ? (done / total) * 100 : 0) : 100) + '%';
+  $('#tr-bar').parentElement.hidden = !live.length;
+  $('#tr-toggle').innerHTML = trCollapsed ? I.chevU : I.chevD;
+  $('#tr-close').innerHTML = I.x;
+  $('#tr-close').hidden = !!live.length;
+  const listEl = $('#tr-list');
+  listEl.hidden = trCollapsed;
+  if (trCollapsed) return;
+  const keep = new Set();
+  const ordered = jobs.slice().sort((a, b) => rank(a) - rank(b));
+  ordered.forEach((j, i) => {
+    keep.add(j.id);
+    if (!j.el) { j.el = document.createElement('div'); j.el.className = 'tj'; j.el.innerHTML = '<div class="tic"></div><div style="min-width:0"><div class="nm"></div><div class="bar"><i></i></div><div class="meta"></div></div><div class="acts"></div>'; }
+    if (listEl.children[i] !== j.el) listEl.insertBefore(j.el, listEl.children[i] || null);
+    renderJob(j);
+  });
+  [...listEl.children].forEach((el) => { if (!allJobs().some((j) => j.el === el && keep.has(j.id))) el.remove(); });
+}
+const rank = (j) => ({ uploading: 0, checking: 1, queued: 2, paused: 3, error: 4, done: 5, skipped: 6 }[j.status] ?? 7);
+function renderJob(j) {
+  if (!j.el || trCollapsed) return;
+  const el = j.el;
+  el.className = 'tj ' + j.status;
+  const fileName = baseOf('/' + j.name);
+  const iconKey = j.kind + (j.name.includes('/') ? 'f' : '') + j.status;
+  if (el.dataset.ik !== iconKey) { el.dataset.ik = iconKey; el.querySelector('.tic').innerHTML = j.kind === 'download' ? I.download.replace(/19/g, '26') : fileIcon({ name: fileName, dir: false }, 28); }
+  const nm = el.querySelector('.nm'); const label = j.kind === 'download' ? j.name : j.name;
+  if (nm.textContent !== label) { nm.textContent = label; nm.title = j.kind === 'upload' ? `${j.name} → ${j.dir}` : j.name; }
+  const pct = j.size ? (j.loaded / j.size) * 100 : j.status === 'done' ? 100 : 0;
+  const barWrap = el.querySelector('.bar');
+  barWrap.hidden = !['uploading', 'checking', 'paused'].includes(j.status);
+  barWrap.firstChild.style.width = pct + '%';
+  const sp = speedOf(j);
+  let meta;
+  switch (j.status) {
+    case 'queued': meta = `Waiting · ${fmtSize(j.size)}`; break;
+    case 'checking': meta = j.kind === 'download' ? 'Preparing…' : 'Checking…'; break;
+    case 'uploading': meta = j.note || [`${fmtSize(j.loaded)} of ${fmtSize(j.size)}`, fmtSpeed(sp), fmtEta((j.size - j.loaded) / sp)].filter(Boolean).join(' · ') + (j.resumed ? ' · resumed' : ''); break;
+    case 'paused': meta = `Paused · ${fmtSize(j.loaded)} of ${fmtSize(j.size)}`; break;
+    case 'done': meta = j.kind === 'download' ? `Saved to ${S.downloadsDir}` : `Uploaded · ${fmtSize(j.size)}`; break;
+    case 'skipped': meta = 'Skipped — already on the server'; break;
+    case 'error': meta = j.error || 'Failed'; break;
+    default: meta = j.status;
+  }
+  const m = el.querySelector('.meta'); if (m.textContent !== meta) { m.textContent = meta; m.title = meta; }
+  const acts = el.querySelector('.acts');
+  const want = j.kind === 'download'
+    ? (j.status === 'done' ? 'reveal' : ['checking', 'uploading'].includes(j.status) ? 'cancel' : '')
+    : ({ uploading: 'pause,cancel', checking: 'cancel', queued: 'cancel', paused: 'resume,cancel', error: 'retry,cancel' }[j.status] || '');
+  if (acts.dataset.want !== want) {
+    acts.dataset.want = want;
+    acts.innerHTML = want.split(',').filter(Boolean).map((a) => `<button class="icon-btn" data-a="${a}" title="${{ pause: 'Pause', resume: 'Resume', retry: 'Try again', cancel: 'Cancel', reveal: 'Show in Finder' }[a]}">${{ pause: I.pause, resume: I.play, retry: I.retry, cancel: I.x, reveal: I.reveal }[a]}</button>`).join('');
+    acts.onclick = (ev) => {
+      const b = ev.target.closest('[data-a]'); if (!b) return;
+      const a = b.dataset.a;
+      if (a === 'pause') pauseJob(j); else if (a === 'resume' || a === 'retry') resumeJob(j); else if (a === 'cancel') cancelJob(j);
+      else if (a === 'reveal') api('POST', 'reveal', null, { localPath: j.localPath }).catch(showError);
+    };
+  }
+}
+$('#tr-toggle').onclick = () => { trCollapsed = !trCollapsed; LS.set('trCollapsed', trCollapsed); renderTransfers(); };
+$('#tr-close').onclick = async () => {
+  for (let i = uploads.length - 1; i >= 0; i--) if (['done', 'skipped', 'cancelled', 'error'].includes(uploads[i].status)) uploads.splice(i, 1);
+  for (const [k, j] of downloads) if (['done', 'error', 'cancelled'].includes(j.status)) downloads.delete(k);
+  await api('POST', 'jobs/clear').catch(() => {});
+  renderTransfers();
+};
+
+
+/* ------------------------------------------------------------ app menu commands (standalone app) */
+window.dropfinCommand = (c) => {
+  // The page already handled this shortcut itself; ignore the menu's echo of it.
+  if (performance.now() - (window.__dfKeyAt || 0) < 300) return;
+  if (c === 'settings') { if (S.server && !$('#app').hidden && !modalOpen) serverSettings(); return; }
+  if ($('#app').hidden || modalOpen) return;
+  hideMenu();
+  const one = () => { const s = selected(); return s.length === 1 ? s[0] : null; };
+  const map = {
+    newFolder, goto: goToFolder, back: goBack, forward: goFwd, up: goUp, home: () => go(S.home),
+    uploadFiles: () => $('#pick-files').click(), uploadFolder: () => $('#pick-folder').click(),
+    download: downloadSel, delete: deleteSel, disconnect, scan: () => (S.side.jellyfin ? scan() : serverSettings()),
+    info: () => { const e = one(); if (e) getInfo(e); }, rename: () => { const e = one(); if (e) renameItem(e); },
+    quickLook: () => { const e = one(); if (e) quickLook(e); }, find: () => $('#search').focus(),
+    viewGrid: () => setView('grid'), viewList: () => setView('list'), refresh: () => { loadSidebar(); load(true); },
+  };
+  if (map[c]) map[c]();
+};
+
+/* keep the helper alive while this tab is open */
+setInterval(() => { api('POST', 'ping', null, {}, { quiet: true }).catch(() => {}); }, 60000);
+window.addEventListener('focus', () => { if (S.path && !$('#app').hidden) load(true); });
+
+boot();
+</script>
+</body>
+</html>
