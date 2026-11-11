@@ -19,6 +19,7 @@
   --accent:#0a7aff; --accent-soft:rgba(10,122,255,.10); --sel:#0a7aff; --sel-inactive:#e3e3e8;
   --danger:#e5372b; --ok:#1f9d48; --input:#ededf0; --input-hover:#e2e2e6; --track:#e5e5ea;
   --folder:#58b0f7; --folder-back:#3a96e6; --doc:#ffffff; --doc-stroke:#c9c9ce; --scrim:rgba(0,0,0,.2); --ql:#f5f5f7;
+  --sb-neutral:#7b8594; --sb-movies:#8b78c6; --sb-tv:#4e9a92; --sb-music:#c0808a; --sb-books:#b39252; --sb-photos:#6e9a64;
   --cols:minmax(240px,1fr) 190px 96px 160px;
 }
 @media (prefers-color-scheme: dark){
@@ -28,6 +29,7 @@
     --accent:#0a84ff; --accent-soft:rgba(10,132,255,.16); --sel:#0a62d0; --sel-inactive:#3a3a3d;
     --danger:#ff453a; --ok:#32d74b; --input:#2f2f32; --input-hover:#3a3a3d; --track:#3a3a3d;
     --folder:#4aa3ee; --folder-back:#2c7fcf; --doc:#2c2c2e; --doc-stroke:#5a5a5e; --scrim:rgba(0,0,0,.45); --ql:#161618;
+    --sb-neutral:#97a0ad; --sb-movies:#a594dc; --sb-tv:#6db7ae; --sb-music:#d59ca4; --sb-books:#cbab6c; --sb-photos:#8bb580;
   }
 }
 *{box-sizing:border-box}
@@ -98,7 +100,12 @@ label.lbl{display:block;font-size:12px;font-weight:500;color:var(--text2);margin
 #sb-nav{flex:1;overflow:auto;padding-bottom:8px}
 .sb-section{font-size:11px;font-weight:600;color:var(--text3);padding:14px 10px 4px}
 .sb-item{display:flex;align-items:center;gap:9px;width:100%;height:30px;padding:0 10px;border-radius:8px;text-align:left}
-.sb-item .fx{color:var(--accent);width:18px}
+.sb-item .fx{color:var(--sb-neutral);width:18px}
+.sb-item.t-movies .fx,.sb-item.t-homevideos .fx,.sb-item.t-boxsets .fx{color:var(--sb-movies)}
+.sb-item.t-tvshows .fx{color:var(--sb-tv)}
+.sb-item.t-music .fx,.sb-item.t-musicvideos .fx{color:var(--sb-music)}
+.sb-item.t-books .fx{color:var(--sb-books)}
+.sb-item.t-photos .fx{color:var(--sb-photos)}
 .sb-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sb-item:hover{background:var(--hover)}
 .sb-item.active{background:var(--sb-active)}
@@ -699,7 +706,7 @@ function renderSidebar() {
   const libs = S.side.libraries || [];
   if (libs.length) {
     h += '<div class="sb-section">Libraries</div>';
-    for (const l of libs) h += item(l.path, l.name, ROOT_ICONS[l.type] || I.folder, l.available ? '' : 'missing');
+    for (const l of libs) h += item(l.path, l.name, ROOT_ICONS[l.type] || I.folder, `t-${esc(l.type)}${l.available ? '' : ' missing'}`);
   }
   h += '<div class="sb-section">Favorites</div>' + item(S.home, 'Home', I.home);
   for (const p of S.side.pins || []) h += item(p.path, p.name, I.folder, 'pin');
