@@ -210,9 +210,14 @@ fn build_menu() -> muda::Menu {
     let item = |id: &str, text: &str, accel: Option<&str>| MenuItem::with_id(id, text, true, accel.and_then(|a| a.parse::<Accelerator>().ok()));
     let sep = || P::separator();
 
-    let about = AboutMetadata { name: Some("Dropfin".into()), version: Some(api::VERSION.into()), comments: Some("Move media to your server over SSH.".into()), ..Default::default() };
+    let version = match api::BUILD_COMMIT {
+        Some(c) if c.len() >= 7 => format!("{} ({})", api::VERSION, &c[..7]),
+        _ => api::VERSION.to_string(),
+    };
+    let about = AboutMetadata { name: Some("Dropfin".into()), version: Some(version), comments: Some("Move media to your server over SSH.".into()), ..Default::default() };
     let app_menu = Submenu::with_items("Dropfin", true, &[
-        &P::about(None, Some(about)), &sep(),
+        &P::about(None, Some(about)),
+        &item("checkUpdates", "Check for Updates…", None), &sep(),
         &item("settings", "Server Settings…", Some("CmdOrCtrl+Comma")), &sep(),
         &P::services(None), &sep(), &P::hide(None), &P::hide_others(None), &P::show_all(None), &sep(),
         &item("quit", "Quit Dropfin", Some("CmdOrCtrl+Q")),

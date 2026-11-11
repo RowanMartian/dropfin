@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#232325" media="(prefers-color-scheme: dark)">
 <title>Dropfin</title>
+<link rel="stylesheet" href="/fa/fontawesome.css">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -39,6 +40,8 @@ input,select{font:inherit;color:inherit}
 :focus{outline:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 svg{flex:none;display:block}
+.fx{flex:none;line-height:1;text-align:center}
+.fi{width:1.3em}
 kbd{font:inherit}
 
 /* ---------- buttons & fields ---------- */
@@ -95,12 +98,12 @@ label.lbl{display:block;font-size:12px;font-weight:500;color:var(--text2);margin
 #sb-nav{flex:1;overflow:auto;padding-bottom:8px}
 .sb-section{font-size:11px;font-weight:600;color:var(--text3);padding:14px 10px 4px}
 .sb-item{display:flex;align-items:center;gap:9px;width:100%;height:30px;padding:0 10px;border-radius:8px;text-align:left}
-.sb-item svg{color:var(--accent)}
+.sb-item .fx{color:var(--accent);width:18px}
 .sb-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sb-item:hover{background:var(--hover)}
 .sb-item.active{background:var(--sb-active)}
 .sb-item.missing{color:var(--text3)}
-.sb-item.missing svg{color:var(--text3)}
+.sb-item.missing .fx{color:var(--text3)}
 .sb-note{font-size:11.5px;color:var(--text3);padding:4px 10px;line-height:1.4}
 .sb-foot{border-top:1px solid var(--border);padding:12px 6px 0;display:grid;gap:12px}
 .storage .lbl2{font-size:11px;color:var(--text2);margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
@@ -110,8 +113,9 @@ label.lbl{display:block;font-size:12px;font-weight:500;color:var(--text2);margin
 .sb-conn:hover{background:var(--hover)}
 .sb-conn .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
 .sb-conn .dot.off{background:var(--text3)}
+.upd-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;opacity:.85}
 .sb-conn span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
-.sb-conn svg{color:var(--text2)}
+.sb-conn .fx{color:var(--text2)}
 
 .main{display:grid;grid-template-rows:52px minmax(0,1fr) 30px;min-width:0;min-height:0}
 .toolbar{display:flex;align-items:center;gap:4px;padding:0 12px;border-bottom:1px solid var(--border);min-width:0}
@@ -152,7 +156,7 @@ label.lbl{display:block;font-size:12px;font-weight:500;color:var(--text2);margin
 .cut{opacity:.45}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:4px;padding-top:14px}
 .tile{display:flex;flex-direction:column;align-items:center;padding:6px 4px;border-radius:10px;gap:5px;min-width:0}
-.tile .ic{padding:5px;border-radius:9px}
+.tile .ic{width:78px;height:70px;border-radius:10px;display:grid;place-items:center}
 .tile .nm{font-size:12px;text-align:center;line-height:1.3;padding:1px 6px;border-radius:5px;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
 .tile .sub{font-size:11px;color:var(--text3);margin-top:-3px}
 .tile.sel .ic{background:var(--sel-inactive)}
@@ -281,7 +285,7 @@ label.lbl{display:block;font-size:12px;font-weight:500;color:var(--text2);margin
     <nav id="sb-nav"></nav>
     <div class="sb-foot">
       <div class="storage" id="storage"></div>
-      <button class="sb-conn" id="sb-conn" title="Server options"><i class="dot" id="conn-dot"></i><span id="conn-name"></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5.5" cy="12" r=".6"/><circle cx="12" cy="12" r=".6"/><circle cx="18.5" cy="12" r=".6"/></svg></button>
+      <button class="sb-conn" id="sb-conn" title="Server options"><i class="dot" id="conn-dot"></i><span id="conn-name"></span><i class="upd-dot" id="upd-dot" hidden title="Update available"></i><i class="fa-solid fa-ellipsis fx" style="font-size:14px" aria-hidden="true"></i></button>
     </div>
   </aside>
   <div class="sb-scrim" id="sb-scrim"></div>
@@ -344,41 +348,20 @@ const LS = {
 };
 
 /* ------------------------------------------------------------ icons */
-const ic = (d, s = 18, w = 1.7) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
-const FOLDER_D = '<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h3.6l2 2h7.4A2.5 2.5 0 0 1 21 9.5v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/>';
+/* Font Awesome Free solid icons (bundled with the app; no network needed). */
+const fa = (name, px) => `<i class="fa-solid fa-${name} fx" style="font-size:${px}px" aria-hidden="true"></i>`;
+const resize = (html, px) => html.replace(/font-size:[\d.]+px/, `font-size:${px}px`);
 const I = {
-  back: ic('<path d="M15 18l-6-6 6-6"/>', 20),
-  fwd: ic('<path d="M9 18l6-6-6-6"/>', 20),
-  list: ic('<path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" stroke-width="2.4"/>', 17),
-  grid: ic('<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>', 17),
-  newFolder: ic(FOLDER_D + '<path d="M12 10.5v6M9 13.5h6"/>', 19),
-  upload: ic('<path d="M12 15V4.5M7.5 9L12 4.5 16.5 9"/><path d="M4.5 14.5v3a2.5 2.5 0 0 0 2.5 2.5h10a2.5 2.5 0 0 0 2.5-2.5v-3"/>', 19),
-  download: ic('<path d="M12 4.5V15M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 14.5v3a2.5 2.5 0 0 0 2.5 2.5h10a2.5 2.5 0 0 0 2.5-2.5v-3"/>', 19),
-  scan: ic('<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>', 18),
-  search: ic('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>', 15),
-  film: ic('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M7.5 4.5v15M16.5 4.5v15M3.5 9.5h4M3.5 14.5h4M16.5 9.5h4M16.5 14.5h4"/>', 17),
-  tv: ic('<rect x="3" y="5" width="18" height="12" rx="2.5"/><path d="M8.5 20h7"/>', 17),
-  music: ic('<path d="M9 17.5V6l10.5-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="17" cy="15.5" r="2.5"/>', 17),
-  book: ic('<path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H18"/>', 17),
-  photo: ic('<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 16l-5-5-8.5 8"/>', 17),
-  folder: ic(FOLDER_D, 17),
-  home: ic('<path d="M4 11l8-6.5 8 6.5"/><path d="M6 9.5V19h12V9.5"/>', 17),
-  drive: ic('<rect x="3.5" y="13" width="17" height="6.5" rx="2"/><path d="M5.5 13l2-7.5h9l2 7.5"/><path d="M17 16.3h.01" stroke-width="2.4"/>', 17),
-  pin: ic('<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.2"/>', 17),
-  sidebar: ic('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/>', 19),
-  x: ic('<path d="M7 7l10 10M17 7L7 17"/>', 15),
-  pause: ic('<path d="M9 7v10M15 7v10"/>', 15, 2),
-  play: ic('<path d="M8.5 6.5v11l9-5.5z"/>', 14),
-  retry: ic('<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>', 15),
-  reveal: ic('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>', 15),
-  chevD: ic('<path d="M6 9l6 6 6-6"/>', 15),
-  chevU: ic('<path d="M6 15l6-6 6 6"/>', 15),
-  chevR: ic('<path d="M9.5 6l6 6-6 6"/>', 12),
-  server: ic('<rect x="4" y="4" width="16" height="7" rx="2"/><rect x="4" y="13" width="16" height="7" rx="2"/><path d="M8 7.5h.01M8 16.5h.01" stroke-width="2.4"/>', 22),
-  edit: ic('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>', 16),
-  up: ic('<path d="M12 19V5M6 11l6-6 6 6"/>', 15),
-  down: ic('<path d="M12 5v14M6 13l6 6 6-6"/>', 15),
-  warn: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>', 40, 1.6),
+  back: fa('chevron-left', 14), fwd: fa('chevron-right', 14),
+  list: fa('list', 13), grid: fa('table-cells-large', 13),
+  newFolder: fa('folder-plus', 15), upload: fa('arrow-up-from-bracket', 14), download: fa('download', 14),
+  scan: fa('arrows-rotate', 14), search: fa('magnifying-glass', 12),
+  film: fa('film', 13), tv: fa('tv', 12), music: fa('music', 13), book: fa('book', 13), photo: fa('image', 13),
+  folder: fa('folder', 13), home: fa('house', 12), drive: fa('hard-drive', 13), pin: fa('location-dot', 13),
+  sidebar: fa('bars', 15), x: fa('xmark', 13), pause: fa('pause', 12), play: fa('play', 11), retry: fa('rotate-right', 12),
+  reveal: fa('magnifying-glass', 12), chevD: fa('chevron-down', 11), chevU: fa('chevron-up', 11), chevR: fa('chevron-right', 8),
+  server: fa('server', 17), edit: fa('pen', 12), up: fa('arrow-up', 13), down: fa('arrow-down', 13),
+  warn: fa('triangle-exclamation', 34), dots: fa('ellipsis', 14), update: fa('circle-arrow-up', 12),
 };
 const ROOT_ICONS = { movies: I.film, tvshows: I.tv, music: I.music, musicvideos: I.music, homevideos: I.film, books: I.book, photos: I.photo, boxsets: I.film, mixed: I.folder };
 
@@ -399,24 +382,12 @@ const extOf = (n) => { const i = n.lastIndexOf('.'); return i > 0 ? n.slice(i + 
 function kindOf(e) { if (e.dir) return 'folder'; const x = extOf(e.name); for (const k in EXT) if (EXT[k].includes(x)) return k; return 'other'; }
 function kindLabel(e) { if (e.dir) return 'Folder'; const x = extOf(e.name); return KIND_NAME[x] || (x ? x.toUpperCase() + ' file' : 'Document'); }
 
-function folderSVG(s) {
-  return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" aria-hidden="true"><path d="M5 15.5A4.5 4.5 0 0 1 9.5 11h14.2c1.3 0 2.5.5 3.4 1.4L30.8 16H54.5A4.5 4.5 0 0 1 59 20.5V49a4.5 4.5 0 0 1-4.5 4.5h-45A4.5 4.5 0 0 1 5 49z" fill="var(--folder-back)"/><path d="M5 25A4.5 4.5 0 0 1 9.5 20.5h45A4.5 4.5 0 0 1 59 25v24a4.5 4.5 0 0 1-4.5 4.5h-45A4.5 4.5 0 0 1 5 49z" fill="var(--folder)"/></svg>`;
+const KIND_ICON = { folder: 'folder', video: 'file-video', subtitle: 'closed-captioning', image: 'file-image', audio: 'file-audio', text: 'file-lines', archive: 'file-zipper', other: 'file' };
+function fileIcon(e, size) {
+  const k = kindOf(e);
+  const color = k === 'folder' ? 'var(--folder)' : KIND_COLOR[k];
+  return `<i class="fa-solid fa-${KIND_ICON[k]} fx fi" style="font-size:${Math.round(size * 0.84)}px;color:${color}" aria-hidden="true"></i>`;
 }
-function docSVG(s, kind, ext) {
-  const c = KIND_COLOR[kind];
-  const g = {
-    video: `<rect x="19" y="27" width="24" height="17" rx="3.5" fill="${c}"/><path d="M28.5 31.5v8l6.5-4z" fill="#fff"/>`,
-    subtitle: `<rect x="18" y="28" width="26" height="16" rx="3.5" fill="${c}"/><path d="M22.5 34.5h8M33.5 34.5h6M22.5 38.5h5M30.5 38.5h9" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>`,
-    image: `<rect x="18" y="27" width="26" height="18" rx="3.5" fill="${c}"/><circle cx="25" cy="32.5" r="2.3" fill="#fff"/><path d="M20.5 43l7.5-7 4.5 4 3.5-3 6 6z" fill="#fff"/>`,
-    audio: `<path d="M27.5 41.5V30l12-3v11.5" stroke="${c}" stroke-width="2.6" fill="none" stroke-linejoin="round"/><circle cx="24.5" cy="41.5" r="3.6" fill="${c}"/><circle cx="36.5" cy="38.5" r="3.6" fill="${c}"/>`,
-    text: `<path d="M20 27.5h22M20 32.5h22M20 37.5h22M20 42.5h13" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/>`,
-    archive: `<path d="M31 9v3M31 15v3M31 21v3" stroke="${c}" stroke-width="3"/><rect x="27" y="27" width="8" height="11" rx="2" fill="${c}"/>`,
-    other: '',
-  }[kind];
-  const badge = s >= 48 && ext ? `<rect x="14" y="47" width="34" height="10" rx="3" fill="${c}"/><text x="31" y="54.3" text-anchor="middle" font-size="7" font-weight="700" fill="#fff" font-family="-apple-system,system-ui,sans-serif">${esc(ext.slice(0, 4).toUpperCase())}</text>` : '';
-  return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" aria-hidden="true"><path d="M15 6h22.5L51 19.5V54a4 4 0 0 1-4 4H15a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4z" fill="var(--doc)" stroke="var(--doc-stroke)" stroke-width="1.6"/><path d="M37.5 6v9.5a4 4 0 0 0 4 4H51" fill="none" stroke="var(--doc-stroke)" stroke-width="1.6"/>${g}${badge}</svg>`;
-}
-const fileIcon = (e, s) => (e.dir ? folderSVG(s) : docSVG(s, kindOf(e), extOf(e.name)));
 
 /* ------------------------------------------------------------ formatting */
 function fmtSize(b) {
@@ -651,7 +622,7 @@ async function discover(form) {
   try { found = (await api('GET', 'discover')).servers; } catch {}
   if (!box.isConnected) return;
   if (!found.length) { box.innerHTML = ''; return; }
-  box.innerHTML = `<span class="hint" style="width:100%">Found on your network:</span>` + found.map((f, i) => `<button type="button" class="chip" data-i="${i}">${I.server.replace(/22/g, '14')} ${esc(f.name)} · ${esc(f.host)}</button>`).join('');
+  box.innerHTML = `<span class="hint" style="width:100%">Found on your network:</span>` + found.map((f, i) => `<button type="button" class="chip" data-i="${i}">${resize(I.server, 11)} ${esc(f.name)} · ${esc(f.host)}</button>`).join('');
   box.onclick = (e) => {
     const c = e.target.closest('.chip'); if (!c) return;
     const f = found[+c.dataset.i];
@@ -709,6 +680,7 @@ async function enterApp() {
   if (S.path == null) await go(S.home, { push: false });
   $('#files').focus();
   renderTransfers();
+  if (!S.updateTimer) { setTimeout(() => checkUpdates(false), 4000); S.updateTimer = setInterval(() => checkUpdates(false), 12 * 3600 * 1000); }
 }
 
 async function loadSidebar() {
@@ -766,7 +738,10 @@ $('#sb-scrim').onclick = () => $('#app').classList.remove('sb-open');
 
 $('#sb-conn').onclick = (e) => {
   showMenu([
+    S.update && S.update.available ? { label: 'Update Available…', action: () => showUpdate(S.update) } : null,
+    S.update && S.update.available ? '-' : null,
     { label: 'Server Settings…', action: serverSettings },
+    { label: 'Check for Updates…', action: () => checkUpdates(true) },
     { label: 'Refresh', kbd: '⌘R', action: () => { loadSidebar(); load(true); } },
     '-',
     { label: 'Disconnect', action: disconnect },
@@ -825,6 +800,24 @@ async function serverSettings() {
     await loadSidebar();
     toast('Settings saved');
   } catch (e) { showError(e); }
+}
+
+/* ------------------------------------------------------------ updates (quiet) */
+async function checkUpdates(manual) {
+  let d;
+  try { d = await api('GET', 'update', manual ? { force: 1 } : null, null, { quiet: true }); } catch { if (manual) toast("Couldn't check for updates right now.", true); return; }
+  S.update = d;
+  $('#upd-dot').hidden = !d.available;
+  if (!manual) return;
+  if (!d.enabled) return toast('Update checks work in copies built by GitHub.');
+  if (d.available) return showUpdate(d);
+  if (d.reachable === false) return toast("Couldn't reach GitHub to check. Update checks need the repository to be public.");
+  toast('Dropfin is up to date');
+}
+async function showUpdate(d) {
+  const r = await modal({ title: 'A new version of Dropfin is available', message: `You have build ${d.current}; the latest is ${d.latest}. Download it, then replace Dropfin in your Applications folder.`,
+    buttons: [{ label: 'Later', value: null }, { label: 'Download…', value: true, primary: true }] });
+  if (r) api('POST', 'update/open').catch(showError);
 }
 
 /* ------------------------------------------------------------ navigation & listing */
@@ -907,14 +900,14 @@ function renderFiles() {
   const head = $('#list-head');
   head.hidden = S.view !== 'list';
   if (S.view === 'list') {
-    const col = (k, label, cls = '') => `<button data-sort="${k}" class="${cls} ${S.sort.key === k ? 'sorted' : ''}">${label}${S.sort.key === k ? (S.sort.dir > 0 ? I.chevU : I.chevD).replace(/15/g, '11') : ''}</button>`;
+    const col = (k, label, cls = '') => `<button data-sort="${k}" class="${cls} ${S.sort.key === k ? 'sorted' : ''}">${label}${S.sort.key === k ? resize(S.sort.dir > 0 ? I.chevU : I.chevD, 8) : ''}</button>`;
     head.innerHTML = col('name', 'Name') + col('date', 'Date Modified', 'h-date') + col('size', 'Size', 'r') + col('kind', 'Kind', 'h-kind');
   }
   const body = $('#file-body');
   if (!list.length) {
     body.innerHTML = S.filter
       ? `<div class="empty"><div>No items match “${esc(S.filter)}”.</div></div>`
-      : `<div class="empty"><div class="box">${I.upload.replace(/19/g, '30')}<b>This folder is empty</b><span>Drop movies here to upload them, or press Upload.</span></div></div>`;
+      : `<div class="empty"><div class="box">${resize(I.upload, 28)}<b>This folder is empty</b><span>Drop movies here to upload them, or press Upload.</span></div></div>`;
     return;
   }
   const cut = S.clip && S.clip.mode === 'cut' ? new Set(S.clip.paths) : null;
@@ -938,7 +931,7 @@ function renderStatus() {
   }
   const show = crumbs.length > 6 ? [crumbs[0], { ellipsis: true }, ...crumbs.slice(-4)] : crumbs;
   $('#pathbar').innerHTML = show.map((c, i) => (i ? `<span class="chev">${I.chevR}</span>` : '') +
-    (c.ellipsis ? '<span class="chev">…</span>' : `<button class="crumb" data-path="${esc(c.p)}">${c.icon ? c.icon.replace(/17/g, '13') : folderSVG(14)}<span>${esc(c.name)}</span></button>`)).join('');
+    (c.ellipsis ? '<span class="chev">…</span>' : `<button class="crumb" data-path="${esc(c.p)}">${c.icon ? resize(c.icon, 11) : fileIcon({ dir: true, name: '' }, 13)}<span>${esc(c.name)}</span></button>`)).join('');
   const n = S.vis.length, s = S.sel.size;
   let txt = plural(n, 'item');
   if (s) { const bytes = S.vis.filter((e) => S.sel.has(e.name) && !e.dir).reduce((a, e) => a + e.size, 0); txt = `${s} of ${n} selected${bytes ? ', ' + fmtSize(bytes) : ''}`; }
@@ -1538,7 +1531,7 @@ function renderJob(j) {
   el.className = 'tj ' + j.status;
   const fileName = baseOf('/' + j.name);
   const iconKey = j.kind + (j.name.includes('/') ? 'f' : '') + j.status;
-  if (el.dataset.ik !== iconKey) { el.dataset.ik = iconKey; el.querySelector('.tic').innerHTML = j.kind === 'download' ? I.download.replace(/19/g, '26') : fileIcon({ name: fileName, dir: false }, 28); }
+  if (el.dataset.ik !== iconKey) { el.dataset.ik = iconKey; el.querySelector('.tic').innerHTML = j.kind === 'download' ? resize(I.download, 20) : fileIcon({ name: fileName, dir: false }, 28); }
   const nm = el.querySelector('.nm'); const label = j.kind === 'download' ? j.name : j.name;
   if (nm.textContent !== label) { nm.textContent = label; nm.title = j.kind === 'upload' ? `${j.name} → ${j.dir}` : j.name; }
   const pct = j.size ? (j.loaded / j.size) * 100 : j.status === 'done' ? 100 : 0;
@@ -1587,13 +1580,14 @@ window.dropfinCommand = (c) => {
   // The page already handled this shortcut itself; ignore the menu's echo of it.
   if (performance.now() - (window.__dfKeyAt || 0) < 300) return;
   if (c === 'settings') { if (S.server && !$('#app').hidden && !modalOpen) serverSettings(); return; }
+  if (c === 'checkUpdates') { if (!modalOpen) checkUpdates(true); return; }
   if ($('#app').hidden || modalOpen) return;
   hideMenu();
   const one = () => { const s = selected(); return s.length === 1 ? s[0] : null; };
   const map = {
     newFolder, goto: goToFolder, back: goBack, forward: goFwd, up: goUp, home: () => go(S.home),
     uploadFiles: () => $('#pick-files').click(), uploadFolder: () => $('#pick-folder').click(),
-    download: downloadSel, delete: deleteSel, disconnect, scan: () => (S.side.jellyfin ? scan() : serverSettings()),
+    download: downloadSel, delete: deleteSel, disconnect, checkUpdates: () => checkUpdates(true), scan: () => (S.side.jellyfin ? scan() : serverSettings()),
     info: () => { const e = one(); if (e) getInfo(e); }, rename: () => { const e = one(); if (e) renameItem(e); },
     quickLook: () => { const e = one(); if (e) quickLook(e); }, find: () => $('#search').focus(),
     viewGrid: () => setView('grid'), viewList: () => setView('list'), refresh: () => { loadSidebar(); load(true); },

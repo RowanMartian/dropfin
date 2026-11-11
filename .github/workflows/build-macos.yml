@@ -21,7 +21,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Build Dropfin.app
-        run: ./scripts/bundle-macos.sh
+        env:
+          # Lets the app's update checker compare itself with the latest release of this repo.
+          DROPFIN_REPO: ${{ github.repository }}
+          DROPFIN_COMMIT: ${{ github.sha }}
+        run: bash scripts/bundle-macos.sh
 
       - name: Keep a copy with this run
         uses: actions/upload-artifact@v4

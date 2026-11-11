@@ -17,12 +17,17 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+/// Baked in by the GitHub build (see .github/workflows); absent in local builds, which disables update checks.
+pub const BUILD_REPO: Option<&str> = option_env!("DROPFIN_REPO");
+pub const BUILD_COMMIT: Option<&str> = option_env!("DROPFIN_COMMIT");
 const IN_FLIGHT: usize = 32;
 
 const INDEX_HTML: &str = include_str!("../web/index.html");
 const ICON_SVG: &str = include_str!("../web/icon.svg");
 const ICON_PNG: &[u8] = include_bytes!("../web/icon-180.png");
 const MANIFEST: &str = include_str!("../web/manifest.webmanifest");
+const FA_CSS: &str = include_str!("../web/fa/fontawesome.css");
+const FA_FONT: &[u8] = include_bytes!("../web/fa/fa-solid-900.woff2");
 
 pub struct Job {
     pub id: u64,
@@ -49,6 +54,7 @@ pub struct App {
     pub uploads_active: AtomicUsize,
     pub last_upload_ms: AtomicU64,
     pub quit: Mutex<Option<Box<dyn Fn() + Send>>>,
+    update: Mutex<(u64, Option<Value>)>,
 }
 
 impl App {
@@ -74,6 +80,7 @@ impl App {
             uploads_active: AtomicUsize::new(0),
             last_upload_ms: AtomicU64::new(0),
             quit: Mutex::new(None),
+            update: Mutex::new((0, None)),
         })
     }
 
@@ -309,6 +316,19 @@ async fn dispatch(app: &Arc<App>, method: Method, uri: Uri, headers: HeaderMap, 
             let names: Vec<Value> = libs.as_array().map(|a| a.iter().map(|l| l["Name"].clone()).collect()).unwrap_or_default();
             Ok(json!({ "name": info["ServerName"], "version": info["Version"], "libraries": names }))
         }
+        ("GET", "/api/update") => check_update(app, q.get("force").map(|x| x == "1").unwrap_or(false)).await,
+        ("POST", "/api/update/open") => {
+            let url = app.update.lock().unwrap().1.as_ref().and_then(|v| v["url"].as_str().map(String::from));
+            match url {
+                Some(u) if u.starts_with("https://github.com/") => {
+                    if cfg!(target_os = "macos") {
+                        let _ = std::process::Command::new("/usr/bin/open").arg(&u).spawn();
+                    }
+                    Ok(json!({ "ok": true, "url": u }))
+                }
+                _ => Err(ApiError::new(404, "No update to open")),
+            }
+        }
         ("POST", "/api/ping") => Ok(json!({ "ok": true })),
         ("POST", "/api/quit") => {
             let app2 = app.clone();
@@ -335,9 +355,54 @@ fn static_file(app: &App, path: &str) -> R<Response> {
         "/icon.svg" => ("image/svg+xml", Body::from(ICON_SVG)),
         "/icon-180.png" => ("image/png", Body::from(ICON_PNG)),
         "/manifest.webmanifest" => ("application/manifest+json", Body::from(MANIFEST)),
+        "/fa/fontawesome.css" => ("text/css; charset=utf-8", Body::from(FA_CSS)),
+        "/fa/fa-solid-900.woff2" => {
+            return Ok(([("content-type", "font/woff2"), ("cache-control", "max-age=31536000, immutable")], Body::from(FA_FONT)).into_response());
+        }
         _ => return Err(ApiError::new(404, "Not found")),
     };
     Ok(([("content-type", ctype), ("cache-control", "no-cache")], body).into_response())
+}
+
+// ------------------------------------------------------------------ update check
+
+/// Compares the commit this app was built from with the commit behind the repo's "latest" release.
+/// One small HTTPS request to GitHub, at most every few hours. Quietly does nothing for private repos or offline Macs.
+async fn check_update(app: &App, force: bool) -> R<Value> {
+    let (Some(repo), Some(commit)) = (BUILD_REPO.filter(|r| !r.is_empty()), BUILD_COMMIT.filter(|c| c.len() >= 7)) else {
+        return Ok(json!({ "enabled": false }));
+    };
+    {
+        let cached = app.update.lock().unwrap();
+        if !force && now_ms().saturating_sub(cached.0) < 6 * 3600 * 1000 {
+            if let Some(v) = &cached.1 {
+                return Ok(v.clone());
+            }
+        }
+    }
+    let url = std::env::var("DROPFIN_UPDATE_URL").unwrap_or_else(|_| format!("https://api.github.com/repos/{repo}/releases/tags/latest"));
+    let current = &commit[..7];
+    let result = async {
+        let client = reqwest::Client::builder().timeout(Duration::from_secs(8)).user_agent(format!("Dropfin/{VERSION}")).build().ok()?;
+        let r = client.get(&url).header("Accept", "application/vnd.github+json").send().await.ok()?;
+        if !r.status().is_success() {
+            return None;
+        }
+        r.json::<Value>().await.ok()
+    }
+    .await;
+    let v = match result {
+        Some(rel) => {
+            let latest = rel["target_commitish"].as_str().unwrap_or("").to_string();
+            let is_sha = latest.len() >= 7 && latest.chars().all(|c| c.is_ascii_hexdigit());
+            let available = is_sha && !latest.starts_with(current) && !commit.starts_with(&latest);
+            json!({ "enabled": true, "available": available, "reachable": true, "current": current, "latest": if is_sha { &latest[..7] } else { "" },
+                    "url": rel["html_url"], "published": rel["published_at"] })
+        }
+        None => json!({ "enabled": true, "available": false, "reachable": false, "current": current }),
+    };
+    *app.update.lock().unwrap() = (now_ms(), Some(v.clone()));
+    Ok(v)
 }
 
 // ------------------------------------------------------------------ servers & session

@@ -83,6 +83,16 @@ Your libraries then appear in the sidebar, and Dropfin starts a library scan whe
 If Jellyfin runs in Docker, the paths it reports may be paths inside the container. Those libraries show greyed out.
 Browse to the real folder instead and choose **Add to Sidebar**.
 
+### Updates
+
+Every time GitHub builds a new version, copies of Dropfin built by GitHub notice it on their own.
+A tiny dot appears next to **…** at the bottom of the sidebar, and that menu gains **Update Available…**.
+You can also check yourself from **Dropfin → Check for Updates…**.
+Updating means downloading the new `Dropfin.dmg` and replacing the app in Applications. Your servers and settings stay.
+
+The check is one small request to GitHub, at most a few times a day. It only works if the repository is **public**,
+because GitHub doesn't show private repositories' releases without signing in. With a private repository, the check quietly does nothing.
+
 ### Keyboard
 
 | | |
@@ -135,3 +145,7 @@ Run only the helper, then open `http://localhost:8097` in a browser (no window, 
 ```bash
 cargo run --no-default-features -- --server-only --port 8097
 ```
+
+## Credits
+
+Icons: [Font Awesome Free](https://fontawesome.com) 7.3.1 (icons CC BY 4.0, font SIL OFL 1.1), bundled in `web/fa/`.
